@@ -6,6 +6,8 @@
 
 namespace PhpStruct\Struct;
 
+use PhpStruct\Expression\Expresion;
+
 class File
 {
 

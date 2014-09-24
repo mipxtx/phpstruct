@@ -6,7 +6,7 @@ use PhpStruct\Struct\AbstractDef;
 use PhpStruct\Struct\ClassDef;
 use PhpStruct\Struct\InterfaceDef;
 use PhpStruct\Struct\TraitDef;
-use PhpStruct\Struct\Expresion;
+use PhpStruct\Expression\Expresion;
 use PhpStruct\Struct\Method;
 use PhpStruct\Struct\ProcArgument;
 use PhpStruct\Struct\Procedure;
