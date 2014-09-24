@@ -6,7 +6,7 @@
 
 namespace PhpStruct\Struct;
 
-use PhpStruct\Expression\Expresion;
+use PhpStruct\Expression\Base;
 
 class File
 {
@@ -27,7 +27,7 @@ class File
     private $use = [];
 
     /**
-     * @var Expresion
+     * @var Base
      */
     private $code;
 
@@ -49,7 +49,7 @@ class File
         $this->namespace = $name;
     }
 
-    public function setCode(Expresion $code) {
+    public function setCode(Base $code) {
         $this->code = $code;
     }
 

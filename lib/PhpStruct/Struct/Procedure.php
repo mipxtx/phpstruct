@@ -7,7 +7,7 @@
 namespace PhpStruct\Struct;
 
 
-use PhpStruct\Expression\Expresion;
+use PhpStruct\Expression\Base;
 
 class Procedure {
 
@@ -22,7 +22,7 @@ class Procedure {
     private $argList;
 
     /**
-     * @var Expresion
+     * @var Base
      */
     private $body;
 
@@ -50,7 +50,7 @@ class Procedure {
     }
 
     /**
-     * @return Expresion
+     * @return Base
      */
     public function getBody() {
         return $this->body;

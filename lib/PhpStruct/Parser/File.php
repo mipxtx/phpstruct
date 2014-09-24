@@ -6,7 +6,7 @@ use PhpStruct\Struct\AbstractDef;
 use PhpStruct\Struct\ClassDef;
 use PhpStruct\Struct\InterfaceDef;
 use PhpStruct\Struct\TraitDef;
-use PhpStruct\Expression\Expresion;
+use PhpStruct\Expression\Base;
 use PhpStruct\Struct\Method;
 use PhpStruct\Struct\ProcArgument;
 use PhpStruct\Struct\Procedure;
@@ -322,7 +322,7 @@ class File
             $this->next();
         } while (!$done);
 
-        return new Expresion();
+        return new Base();
     }
 
     public function current() {
