@@ -28,7 +28,8 @@ class TokenIterator
     }
 
     public function end() {
-        return $this->current >= count($this->tokens);
+        $next = $this->current()->next();
+        return $next->getId() >= count($this->tokens);
     }
 
     public function back() {

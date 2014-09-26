@@ -7,6 +7,7 @@
 namespace PhpStruct\Struct;
 
 use PhpStruct\Expression\Base;
+use PhpStruct\Expression\Scope;
 
 class File
 {
@@ -27,7 +28,7 @@ class File
     private $use = [];
 
     /**
-     * @var Base
+     * @var Scope
      */
     private $code;
 
@@ -43,6 +44,7 @@ class File
 
     public function __construct($name) {
         $this->path = $name;
+        $this->code = new Scope();
     }
 
     public function setNameSpace($name) {
@@ -67,7 +69,17 @@ class File
         $str = preg_replace($pattern, "", print_r($this, 1));
 
         return $str;
+    }
 
+    public function addExp(Base $exp){
+        $this->code->addExpression($exp);
 
+    }
+
+    public function addUse($full, $alias = null){
+        if($alias === null){
+            $alias = array_pop(explode("\\", $full));
+            $this->use[$alias] = $full;
+        }
     }
 }
