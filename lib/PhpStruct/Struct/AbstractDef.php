@@ -6,13 +6,12 @@
 
 namespace PhpStruct\Struct;
 
-
-class AbstractDef {
+class AbstractDef
+{
 
     private $name;
 
     private $extends = [];
-
 
     private $implements = [];
 
@@ -25,7 +24,6 @@ class AbstractDef {
      * @var Method[]
      */
     private $methods = [];
-
 
     /**
      * @return ClassField[]
@@ -80,7 +78,7 @@ class AbstractDef {
         $this->implements[] = $implements;
     }
 
-    public function addMethod(Method $method){
+    public function addMethod(Method $method) {
         $this->methods[] = $method;
     }
 } 

@@ -1,0 +1,13 @@
+{
+    "name" : "phpstruct",
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
+    "autoload": {
+        "psr0":
+            {
+                "PhpStruct": "lib/"
+            }
+
+    }
+}

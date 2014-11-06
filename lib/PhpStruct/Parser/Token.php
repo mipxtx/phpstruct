@@ -41,14 +41,6 @@ class Token
         return $this->line;
     }
 
-    public function getLastLine(){
-        if($this->line){
-            return $this->line;
-        }else{
-            return $this->iterator->getLastLine($this->getId());
-        }
-    }
-
     /**
      * @param $type
      * @return bool
@@ -82,11 +74,45 @@ class Token
     }
 
     public function __toString() {
-        return "[$this->number] " . var_export($this->getValue(), 1) . " (" . $this->getStringType() . ")" .
-        ($this->line !== null ? " at line " . ($this->line) : "");
+
+        $line = $this->line !== null ? $this->line : ($this->getPreLine() ? "~" . $this->getPreLine() : null);
+
+        return "[$this->number] "
+        . var_export($this->getValue(), 1) . " (" . $this->getStringType() . ")"
+        . ($line !== null ? " at line " . ($line) : "");
     }
 
-    public function getId(){
+    public function getPreLine() {
+        $i = 0;
+        $line = null;
+        do {
+            $i++;
+            $pre = $this->prev($i);
+            $line = $pre->getLine();
+        } while (!$line);
+
+        return $line;
+    }
+
+    public function getId() {
         return $this->number;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDefinition() {
+        switch ($this->getType()) {
+
+            case T_ABSTRACT :
+            case T_FINAL :
+            case T_CLASS :
+            case T_TRAIT :
+            case T_INTERFACE :
+            case T_FUNCTION:
+                return true;
+            default:
+                return false;
+        }
     }
 } 

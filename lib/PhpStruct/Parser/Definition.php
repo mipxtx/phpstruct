@@ -5,6 +5,7 @@
  */
 
 namespace PhpStruct\Parser;
+
 use PhpStruct\Struct\ClassField;
 use PhpStruct\Struct\AbstractDef;
 use PhpStruct\Struct\ClassDef;
@@ -14,8 +15,8 @@ use PhpStruct\Struct\Method;
 use PhpStruct\Struct\ProcArgument;
 use PhpStruct\Struct\Procedure;
 
-class Definition {
-
+class Definition
+{
     use SupportTrait;
 
     /**
@@ -25,7 +26,7 @@ class Definition {
 
     private $expressionProcessor;
 
-    public function __construct(TokenIterator $iterator, Expression $processor){
+    public function __construct(TokenIterator $iterator, Expression $processor) {
         $this->expressionProcessor = $processor;
         $this->setIterator($iterator);
 
@@ -50,14 +51,12 @@ class Definition {
                 $this->currentDef = new InterfaceDef();
                 break;
         }
-
     }
-
 
     /**
      * @return AbstractDef
      */
-    public function getCurrentDef(){
+    public function getCurrentDef() {
         return $this->currentDef;
     }
 
@@ -180,7 +179,7 @@ class Definition {
         $token = $this->next();
         if ($token->getValue() != ";") {
             $this->next();
-            $field->setDefault($this->expressionProcessor->processExpression());
+            $field->setDefault($this->expressionProcessor->process());
 
             $token = $this->current();
             if ($token->getValue() == ";") {
@@ -190,7 +189,6 @@ class Definition {
 
         return $field;
     }
-
 
     public function processMethod() {
 
@@ -270,7 +268,7 @@ class Definition {
                 $this->log("  after plain");
             } elseif ($this->current()->getValue() == "=") {
                 $this->next();
-                $param->setDefault($this->expressionProcessor->processExpression());
+                $param->setDefault($this->expressionProcessor->process());
 
                 if ($this->current()->getValue() == ",") {
                     $this->next();
@@ -299,5 +297,4 @@ class Definition {
             $this->next();
         } while ($level > 0);
     }
-
-} 
+}

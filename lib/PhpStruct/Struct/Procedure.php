@@ -6,10 +6,10 @@
 
 namespace PhpStruct\Struct;
 
-
 use PhpStruct\Expression\Base;
 
-class Procedure {
+class Procedure
+{
 
     /**
      * @var string
@@ -26,12 +26,11 @@ class Procedure {
      */
     private $body;
 
-    public function __construct($name){
+    public function __construct($name) {
         $this->name = $name;
     }
 
-
-    public function addArg(ProcArgument $arg){
+    public function addArg(ProcArgument $arg) {
         $this->argList[] = $arg;
     }
 
@@ -62,9 +61,4 @@ class Procedure {
     public function setBody($body) {
         $this->body = $body;
     }
-
-
-
-
-
-} 
+}

@@ -6,8 +6,8 @@
 
 namespace PhpStruct\Struct;
 
-
-class ClassDef extends AbstractDef{
+class ClassDef extends AbstractDef
+{
 
     private $abstract = false;
 
@@ -34,5 +34,4 @@ class ClassDef extends AbstractDef{
     public function setFinal() {
         $this->final = true;
     }
-
-} 
+}

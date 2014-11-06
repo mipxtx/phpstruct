@@ -21,14 +21,15 @@ class TokenIterator
         $this->tokens = $tokens;
     }
 
-    public function next() {
-        $this->current += $this->iterate($this->current);
+    public function next($count = 1) {
+        $this->current += $this->iterate($this->current, $count);
 
         return $this->current();
     }
 
     public function end() {
         $next = $this->current()->next();
+
         return $next->getId() >= count($this->tokens);
     }
 

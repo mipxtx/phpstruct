@@ -71,15 +71,18 @@ class File
         return $str;
     }
 
-    public function addExp(Base $exp){
+    public function addExp(Base $exp) {
         $this->code->addExpression($exp);
-
     }
 
-    public function addUse($full, $alias = null){
-        if($alias === null){
+    public function addUse($full, $alias = null) {
+        if ($alias === null) {
             $alias = array_pop(explode("\\", $full));
             $this->use[$alias] = $full;
         }
+    }
+
+    public function getCode(){
+        return $this->code;
     }
 }

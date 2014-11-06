@@ -6,7 +6,7 @@
 
 namespace PhpStruct\Expression;
 
-
-class ArrayDef {
-
-} 
+class ArrayDef extends Base implements HasArgsInterface
+{
+    use ArgsTrait;
+}

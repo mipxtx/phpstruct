@@ -6,8 +6,8 @@
 
 namespace PhpStruct\Struct;
 
-
-class Method extends Procedure{
+class Method extends Procedure
+{
 
     private $access;
 
@@ -45,7 +45,6 @@ class Method extends Procedure{
         $this->static = true;
     }
 
-
     /**
      * @return boolean
      */
@@ -73,5 +72,4 @@ class Method extends Procedure{
     public function setFinal() {
         $this->final = true;
     }
-
-} 
+}

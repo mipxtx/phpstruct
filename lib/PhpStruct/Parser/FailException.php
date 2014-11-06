@@ -6,6 +6,6 @@
 
 namespace PhpStruct\Parser;
 
-
-class FailException extends \Exception{
+class FailException extends \Exception
+{
 } 

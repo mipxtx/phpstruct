@@ -6,17 +6,18 @@
 
 namespace PhpStruct\Struct;
 
-
-class ClassField {
+class ClassField
+{
 
     private $name;
-    private $access;
-    private $default;
 
+    private $access;
+
+    private $default;
 
     private $static = false;
 
-    public function __construct($access,$name){
+    public function __construct($access, $name) {
         $this->access = $access;
         $this->name = $name;
     }
@@ -62,6 +63,4 @@ class ClassField {
     public function setStatic() {
         $this->static = true;
     }
-
-
-} 
+}

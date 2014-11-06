@@ -1,0 +1,26 @@
+<phpunit
+        backupGlobals="false"
+        backupStaticAttributes="false"
+        bootstrap="init-dev.php"
+        cacheTokens="true"
+        convertErrorsToExceptions="true"
+        convertNoticesToExceptions="true"
+        convertWarningsToExceptions="true"
+        forceCoversAnnotation="false"
+        mapTestClassNameToCoveredClassName="false"
+        processIsolation="false"
+        stopOnError="false"
+        stopOnFailure="false"
+        stopOnIncomplete="false"
+        stopOnSkipped="false"
+        strict="false"
+        verbose="false"
+        preserveGlobalState="false"
+        files-per-thread="10"
+        colors="true">
+    <testsuites>
+        <testsuite >
+            <file>unit.php</file>
+        </testsuite>
+    </testsuites>
+</phpunit>

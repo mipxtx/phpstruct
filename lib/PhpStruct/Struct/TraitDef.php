@@ -6,6 +6,6 @@
 
 namespace PhpStruct\Struct;
 
-class TraitDef extends AbstractDef{
-
-} 
+class TraitDef extends AbstractDef
+{
+}

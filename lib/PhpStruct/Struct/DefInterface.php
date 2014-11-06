@@ -6,7 +6,6 @@
 
 namespace PhpStruct\Struct;
 
-
-class InterfaceDef extends AbstractDef {
-
-} 
+class InterfaceDef extends AbstractDef
+{
+}

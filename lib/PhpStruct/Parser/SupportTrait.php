@@ -45,23 +45,26 @@ trait SupportTrait
         return $this->iterator->getPrev($count);
     }
 
-    public function end(){
+    public function end() {
         return $this->iterator->end();
     }
 
-
-    public function log($message, $token = null) {
+    public function log($message,$skipTokens = false) {
         if (!$this->debug) {
             return;
         }
-        if (!$token) {
+
+        echo "$message:";
+
+        if(!$skipTokens) {
             $token = $this->current();
+
+            $next = $token->next();
+            $next2 = $token->next(2);
+
+            echo " $token | $next | $next2";
         }
-
-        $next = $token->next();
-        $next2 = $token->next(2);
-
-        echo "$message: $token | $next | $next2\n";
+        echo "\n";
     }
 
     public function enableDebug() {
@@ -70,5 +73,9 @@ trait SupportTrait
 
     public function disableDebug() {
         $this->debug = false;
+    }
+
+    public function isEnabled() {
+        return $this->debug;
     }
 }
