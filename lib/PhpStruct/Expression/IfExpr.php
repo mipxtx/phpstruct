@@ -19,4 +19,12 @@ class IfExpr extends Scope{
         $this->body = $body;
     }
 
+    public function getBody(){
+        return $this->body;
+    }
+
+    public function hasScope(){
+        return true;
+    }
+
 } 

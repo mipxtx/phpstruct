@@ -4,7 +4,7 @@
  * @date: 20.09.14
  */
 
-namespace PhpStruct\Parser;
+namespace PhpParser;
 
 class FailException extends \Exception
 {

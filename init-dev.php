@@ -8,3 +8,7 @@ spl_autoload_register(
         }
     }
 );
+
+
+set_exception_handler([\PhpParser\Helper::class,"exception"]);
+set_error_handler([\PhpParser\Helper::class,"error"]);

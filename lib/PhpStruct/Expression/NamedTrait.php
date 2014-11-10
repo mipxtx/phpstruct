@@ -14,10 +14,6 @@ trait NamedTrait {
         $this->name = $name;
     }
 
-    public function nDump(){
-        return $this->name;
-    }
-
     public function getName(){
         return $this->name;
     }

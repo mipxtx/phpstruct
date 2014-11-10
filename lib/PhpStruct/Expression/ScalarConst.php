@@ -20,8 +20,4 @@ class ScalarConst extends Base
         $this->type = $type;
         return $this;
     }
-
-    public function dump(){
-        return $this->nDump();
-    }
-} 
+}

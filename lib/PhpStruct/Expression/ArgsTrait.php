@@ -19,11 +19,7 @@ Trait ArgsTrait
         return $this;
     }
 
-    public function aDump(){
-        $out = [];
-        foreach($this->args as $arg){
-            $out[] = $arg->dump(0);
-        }
-        return "(" .implode(",", $out) . ")";
+    public function getArgs(){
+        return $this->args;
     }
-} 
+}

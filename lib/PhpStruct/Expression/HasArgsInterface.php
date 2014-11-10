@@ -6,7 +6,8 @@
 
 namespace PhpStruct\Expression;
 
-
-interface HasArgsInterface {
+interface HasArgsInterface
+{
     public function addArgument(Base $argument);
+    
 } 

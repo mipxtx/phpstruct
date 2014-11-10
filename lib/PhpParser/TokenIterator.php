@@ -4,7 +4,7 @@
  * @date: 20.09.14
  */
 
-namespace PhpStruct\Parser;
+namespace PhpParser;
 
 class TokenIterator
 {
@@ -80,7 +80,7 @@ class TokenIterator
 
                 $tId = $start + $id;
 
-                $rawToken = $this->tokens[$tId];
+                $rawToken = isset($this->tokens[$tId])?$this->tokens[$tId]:null;
 
                 if ($this->debug) {
 
@@ -105,7 +105,8 @@ class TokenIterator
     }
 
     public function createTokenById($id) {
-        return new Token($this->tokens[$id], $id, $this);
+        $token = isset($this->tokens[$id])?$this->tokens[$id]:null;
+        return new Token($token, $id, $this);
     }
 
     public function getLine() {

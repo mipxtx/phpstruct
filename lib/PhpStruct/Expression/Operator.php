@@ -14,15 +14,7 @@ abstract class Operator extends Base
      */
     private $operator;
 
-    private $locked = false;
 
-    public function lock() {
-        $this->locked = true;
-    }
-
-    public function locked() {
-        return $this->locked;
-    }
 
     abstract public function setOperand(Base $operand);
 

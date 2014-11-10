@@ -6,15 +6,19 @@
 
 namespace PhpStruct\Expression;
 
-
 class Base
 {
-    public function dump($level) {
-        return " " . get_class($this);
-    }
+    private $locked = false;
 
-    public function locked() {
+    public function hasScope(){
         return false;
     }
 
+    public function lock() {
+        $this->locked = true;
+    }
+
+    public function locked() {
+        return $this->locked;
+    }
 }

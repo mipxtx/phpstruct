@@ -42,11 +42,8 @@ class Binary extends Operator
         return $this->operand2;
     }
 
-    public function dump($level) {
-        return "("
-            . $this->operand1->dump($level)
-            . $this->getOperator()
-            . ($this->operand2 ? $this->operand2->dump($level) : "NULL")
-            . ")";
+    public function getFirstOperand(){
+        return $this->operand1;
     }
+
 }

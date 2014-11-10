@@ -4,7 +4,7 @@
  * @date: 26.09.14
  */
 
-namespace PhpStruct\Parser;
+namespace PhpParser;
 
 trait SupportTrait
 {

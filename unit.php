@@ -25,7 +25,7 @@ class Unit extends PHPUnit_Framework_TestCase
      * @dataProvider providerTest
      */
     public function testTest($filename) {
-        $f = new \PhpStruct\Parser\FileLoader(__DIR__ . "/test/source/{$filename}");
+        $f = new \PhpParser\FileLoader(__DIR__ . "/test/source/{$filename}");
         $expected = include __DIR__ . "/test/result/{$filename}";
         $actual = $f->process()->getCode()->first();
         $this->assertEquals($expected, $actual);

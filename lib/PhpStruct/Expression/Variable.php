@@ -10,7 +10,4 @@ class Variable extends Base
 {
     use NamedTrait;
 
-    public function dump($level){
-        return $this->nDump();
-    }
 }

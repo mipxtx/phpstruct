@@ -1,5 +1,5 @@
 <?php
-namespace PhpStruct\Parser;
+namespace PhpParser;
 
 /**
  * @author: mix
@@ -47,7 +47,11 @@ class File
                 $this->log("after process class");
             } else {
                 $this->log("start expr");
-                $file->addExp($expressionProcessor->process());
+                $scope = $expressionProcessor->process();
+
+                define("DEBUG",1);
+
+                $file->addExp($scope);
             }
         }
 

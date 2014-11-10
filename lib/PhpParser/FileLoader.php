@@ -4,7 +4,7 @@
  * @date: 21.10.14
  */
 
-namespace PhpStruct\Parser;
+namespace PhpParser;
 
 class FileLoader
 {

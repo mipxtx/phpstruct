@@ -4,7 +4,7 @@
  * @date: 26.09.14
  */
 
-namespace PhpStruct\Parser;
+namespace PhpParser;
 
 use PhpStruct\Struct\ClassField;
 use PhpStruct\Struct\AbstractDef;
@@ -179,7 +179,7 @@ class Definition
         $token = $this->next();
         if ($token->getValue() != ";") {
             $this->next();
-            $field->setDefault($this->expressionProcessor->process());
+            $field->setDefault($this->expressionProcessor->processExpression());
 
             $token = $this->current();
             if ($token->getValue() == ";") {
@@ -268,7 +268,7 @@ class Definition
                 $this->log("  after plain");
             } elseif ($this->current()->getValue() == "=") {
                 $this->next();
-                $param->setDefault($this->expressionProcessor->process());
+                $param->setDefault($this->expressionProcessor->processExpression());
 
                 if ($this->current()->getValue() == ",") {
                     $this->next();

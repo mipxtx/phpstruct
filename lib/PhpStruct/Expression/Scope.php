@@ -6,6 +6,8 @@
 
 namespace PhpStruct\Expression;
 
+use PhpParser\Helper;
+
 class Scope extends Base
 {
 
@@ -18,11 +20,13 @@ class Scope extends Base
      * @param Base $expr
      */
     public function addExpression(Base $expr) {
-        if(!$this->scope && $expr instanceof Scope){
-            $this->scope = $expr->getScope();
-        }
         $this->scope[] = $expr;
     }
+
+    public function mergeScope(Scope $scope){
+        $this->scope = array_merge($this->scope, $scope->getScope());
+    }
+
 
     /**
      * @return Base
@@ -35,18 +39,15 @@ class Scope extends Base
         return count($this->scope);
     }
 
-
-    public function dump($level){
-        $level++;
-        $out = [];
-
-        foreach ($this->scope as $expr) {
-            $out[] = $expr->dump($level) . ";";
-        }
-        return implode("\n", $out);
-    }
-
     public function getScope(){
         return $this->scope;
+    }
+
+    public function getLevelShift($level){
+        $out = "";
+        for($i=0;$i<$level;$i++){
+            $out .= "    ";
+        }
+        return $level. $out;
     }
 } 
