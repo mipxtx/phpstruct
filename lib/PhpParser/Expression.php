@@ -133,22 +133,6 @@ class Expression
                 $this->logNext("array");
                 $this->parseArgs($out);
                 break;
-            case T_IF :
-                $this->logNext("2if", 2);
-                $body = $this->processExpression();
-                $out = new IfExpr($body);
-                $this->logNext("if expr");
-                if ($this->current()->getValue() == "{") {
-                    $this->logNext("if expr2");
-                }
-                $expr = $this->process();
-                if (get_class($expr) == Scope::class) {
-                    $out->mergeScope($expr);
-                } else {
-                    $out->addExpression($expr);
-                }
-                $this->logNext("if end");
-                break;
             default:
                 $this->log("unknown token");
                 die();
@@ -190,8 +174,7 @@ class Expression
      * @param bool $single
      * @return Base
      */
-    public function process($single = false) {
-        $scope = new Scope();
+    public function process(Scope $scope, $single = false) {
         while (!$this->current()->isDefinition() && !$this->end()) {
 
             if ($this->current()->getValue() == ";") {
@@ -206,9 +189,26 @@ class Expression
             }
             $this->log("process start");
 
-            $expr = $this->processExpression();
 
-            print_R($expr);
+            switch($this->current()->getType()){
+                case T_IF :
+                    $this->logNext("2if", 2);
+                    $body = $this->processExpression();
+                    $expr = new IfExpr($body);
+                    $this->logNext("if expr");
+                    if ($this->current()->getValue() == "{") {
+                        $this->logNext("if expr2");
+                        $this->process($expr);
+                        $this->logNext("if end");
+                    }else{
+                        $this->process($expr,true);
+                    }
+
+                    break;
+
+                default:
+                    $expr = $this->processExpression();
+            }
 
             $scope->addExpression($expr);
 

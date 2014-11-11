@@ -1,6 +1,8 @@
 <?php
 namespace PhpParser;
 
+use PhpStruct\Expression\Scope;
+
 /**
  * @author: mix
  * @date: 20.09.14
@@ -47,11 +49,12 @@ class File
                 $this->log("after process class");
             } else {
                 $this->log("start expr");
-                $scope = $expressionProcessor->process();
+                $scope = new Scope();
+                $expressionProcessor->process($scope);
 
                 define("DEBUG",1);
 
-                $file->addExp($scope);
+                $file->mergeScope($scope);
             }
         }
 

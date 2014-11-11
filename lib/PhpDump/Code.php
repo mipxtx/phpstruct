@@ -45,9 +45,10 @@ class Code
             $name = $this->getName($class);
             if (method_exists($this, $this->getName($class))) {
                 $out = call_user_func_array([$this, $name], [$code, $level]);
-                if($code->locked()){
+                if ($code->locked()) {
                     $out = "($out)";
                 }
+
                 return $out;
             }
             $class = get_parent_class($class);
@@ -94,8 +95,10 @@ class Code
 
         $last = $operator[strlen($operator) - 1];
 
+        $lastLetter = ($last > 'a' && $last < 'z') || ($last > 'A' && $last < 'Z');
+
         // space after letter in operator
-        if (($last > 'a' && $last < 'z') || ($last > 'A' && $last < 'Z')) {
+        if (!$operand->locked() && $lastLetter) {
             $space = " ";
         } else {
             $space = "";
