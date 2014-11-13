@@ -6,7 +6,6 @@
 
 namespace PhpDump;
 
-
-class FailException {
-
-} 
+class FailException
+{
+}

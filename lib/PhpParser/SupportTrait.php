@@ -49,14 +49,14 @@ trait SupportTrait
         return $this->iterator->end();
     }
 
-    public function log($message,$skipTokens = false) {
+    public function log($message, $skipTokens = false) {
         if (!$this->debug) {
             return;
         }
 
         echo "$message:";
 
-        if(!$skipTokens) {
+        if (!$skipTokens) {
             $token = $this->current();
 
             $next = $token->next();

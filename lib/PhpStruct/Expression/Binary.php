@@ -42,8 +42,7 @@ class Binary extends Operator
         return $this->operand2;
     }
 
-    public function getFirstOperand(){
+    public function getFirstOperand() {
         return $this->operand1;
     }
-
 }

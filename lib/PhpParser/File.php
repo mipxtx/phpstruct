@@ -7,7 +7,6 @@ use PhpStruct\Expression\Scope;
  * @author: mix
  * @date: 20.09.14
  */
-
 class File
 {
     use SupportTrait;
@@ -49,12 +48,16 @@ class File
                 $this->log("after process class");
             } else {
                 $this->log("start expr");
-                $scope = new Scope();
-                $expressionProcessor->process($scope);
 
-                define("DEBUG",1);
+                $scope = $expressionProcessor->process();
 
-                $file->mergeScope($scope);
+                define("DEBUG", 1);
+
+                if ($scope instanceof Scope) {
+                    $file->mergeScope($scope);
+                } else {
+                    $file->addExpression($scope);
+                }
             }
         }
 

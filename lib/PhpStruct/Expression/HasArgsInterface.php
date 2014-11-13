@@ -9,5 +9,4 @@ namespace PhpStruct\Expression;
 interface HasArgsInterface
 {
     public function addArgument(Base $argument);
-    
-} 
+}

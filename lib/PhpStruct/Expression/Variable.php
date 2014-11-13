@@ -9,5 +9,4 @@ namespace PhpStruct\Expression;
 class Variable extends Base
 {
     use NamedTrait;
-
 }

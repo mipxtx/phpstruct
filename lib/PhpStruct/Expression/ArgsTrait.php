@@ -16,10 +16,11 @@ Trait ArgsTrait
 
     public function addArgument(Base $argument) {
         $this->args[] = $argument;
+
         return $this;
     }
 
-    public function getArgs(){
+    public function getArgs() {
         return $this->args;
     }
 }

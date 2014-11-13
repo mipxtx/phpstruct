@@ -8,10 +8,12 @@ namespace PhpParser;
 
 use PhpDump\Code;
 use PhpStruct\Expression\ArrayAccess;
+use PhpStruct\Expression\ArrayAppend;
 use PhpStruct\Expression\ArrayDef;
 use PhpStruct\Expression\Base;
 use PhpStruct\Expression\Binary;
 use PhpStruct\Expression\DefineUsage;
+use PhpStruct\Expression\ForEachDef;
 use PhpStruct\Expression\FunctionCall;
 use PhpStruct\Expression\HasArgsInterface;
 use PhpStruct\Expression\IfExpr;
@@ -34,6 +36,8 @@ class Expression
      * @var array
      */
     private $priority = [
+        ["->"],
+        ["clone"],
         ["["],
         ["++", "--", "~", "(int)", "(float)", "(string)", "(array)", "(object)", "(bool)", "@"],
         ["instanceof"],
@@ -120,7 +124,7 @@ class Expression
                 $this->logNext("scalar");
                 break;
             case T_VARIABLE :
-                $out = new Variable(ltrim($token->getValue(),'$'));
+                $out = new Variable(ltrim($token->getValue(), '$'));
                 $this->logNext("var out");
                 break;
             case T_NEW:
@@ -170,11 +174,25 @@ class Expression
         return $object;
     }
 
+    public function processBracesScope() {
+
+        if ($this->current()->getValue() == "{") {
+            $this->logNext("scope start");
+            $scope = $this->process(false, true);
+            $this->logNext("scope end");
+        } else {
+            $scope = $this->process(true, true);
+        }
+
+        return $scope;
+    }
+
     /**
      * @param bool $single
      * @return Base
      */
-    public function process(Scope $scope, $single = false) {
+    public function process($single = false, $preserveScope = false) {
+        $scope = new Scope();
         while (!$this->current()->isDefinition() && !$this->end()) {
 
             if ($this->current()->getValue() == ";") {
@@ -189,23 +207,27 @@ class Expression
             }
             $this->log("process start");
 
-
-            switch($this->current()->getType()){
+            switch ($this->current()->getType()) {
                 case T_IF :
                     $this->logNext("2if", 2);
                     $body = $this->processExpression();
-                    $expr = new IfExpr($body);
                     $this->logNext("if expr");
-                    if ($this->current()->getValue() == "{") {
-                        $this->logNext("if expr2");
-                        $this->process($expr);
-                        $this->logNext("if end");
-                    }else{
-                        $this->process($expr,true);
+                    $then = $this->processBracesScope();
+                    $expr = new IfExpr($body, $then);
+                    if ($this->current()->getType() == T_ELSE) {
+                        $this->logNext("else");
+                        $expr->setElse($this->processBracesScope());
                     }
-
                     break;
-
+                case T_FOREACH :
+                    $this->logNext("2foreach", 2);
+                    $item = $this->processExpression();
+                    $this->logNext("foreach as");
+                    $iterator = $this->processExpression();
+                    $this->logNext("foreach body");
+                    $body = $this->processBracesScope();
+                    $expr = new ForEachDef($item, $iterator, $body);
+                    break;
                 default:
                     $expr = $this->processExpression();
             }
@@ -215,9 +237,7 @@ class Expression
             $this->log("process end");
         }
 
-        //$this->log("out scope: " . (new Code($scope))->getCode(), false);
-
-        return $scope->count() == 1 ? $scope->first() : $scope;
+        return ($scope->count() == 1 && !$preserveScope) ? $scope->first() : $scope;
     }
 
     /**
@@ -234,98 +254,65 @@ class Expression
 
         do {
             $token = $this->current();
-            /*$this->log(
-                "expr start ('" . $token->getValue() . "') dump: " .
-                ($current instanceof Operator ? $current->dump(0) : 'NULL')
-            //. "\n". var_export($current, 1) . "\n"
-            );*/
 
-            switch (strtolower($token->getValue())) {
-                case  "." :
-                case  "," :
-                case  "+" :
-                case  "-" :
-                case  "*" :
-                case  "/" :
-                case  "%" :
-                case  "=" :
-                case  "->" :
-                case  "::" :
-                case  "=>" :
-                case  "&&" :
-                case  "||" :
-                    $this->logNext("binary");
-                    list($current, $top) = $this->createOperator(
-                        $token->getValue(),
-                        function ($operator, $operand) {
-                            return new Binary($operator, $operand);
-                        },
-                        $top
-                    );
-                    break;
+            if ($token->isBinary()) {
+                $this->logNext("binary");
+                list($current, $top) = $this->createOperator(
+                    $token->getValue(),
+                    function ($operator, $operand) {
+                        return new Binary($operator, $operand);
+                    },
+                    $top
+                );
+            } elseif ($token->isUnary()) {
+                $this->logNext("unary");
+                list($current, $top) = $this->createOperator(
+                    $token->getValue(),
+                    function ($operator, $operand) {
+                        return new Unary($operator, $operand);
+                    },
+                    $top
+                );
+            } elseif ($token->equal("(")) {
+                $this->logNext("in (");
+                $expression = $this->processExpression();
+                $expression->lock();
+                $this->logNext("out (");
 
-                case "!" :
-                case "require" :
-                case "require_once" :
-                case "include" :
-                case "include_once" :
-                case "return" :
-                case "echo" :
-                case "print" :
-                case "exit":
-                case "die" :
-                    $this->logNext("unary");
-                    list($current, $top) = $this->createOperator(
-                        $token->getValue(),
-                        function ($operator, $operand) {
-                            return new Unary($operator, $operand);
-                        },
-                        $top
-                    );
-                    break;
+                if ($current) {
+                    $current->setOperand($expression);
+                } else {
+                    $top = $expression;
+                }
+            } elseif ($token->equal("[")) {
+                $this->logNext("[");
 
-                case "(" :
-                    $this->logNext("in (");
-                    $expression = $this->processExpression();
-                    $expression->lock();
-                    $this->logNext("out (");
+                $operand = null;
+
+                if (!($top instanceof Operator)) {
+                    $top = $this->processArrayAccess($top);
+                } elseif (!$current || $current->getOperand() === null) {
+                    $array = new ArrayDef();
+                    $this->logNext("array");
+                    $this->parseArgs($array);
 
                     if ($current) {
-                        $current->setOperand($expression);
+                        $current->setOperand($array);
                     } else {
-                        $top = $expression;
+                        $top = $array;
                     }
-                    break;
-                case "[" :
-                    $this->logNext("[");
+                } else {
+                    $current->setOperand($this->processArrayAccess($current->getOperand()));
+                }
 
-                    if (!$current || $current->getOperand() === null) {
-                        $array = new ArrayDef();
-                        $this->logNext("array");
-                        $this->parseArgs($array);
-
-                        if ($current) {
-                            $current->setOperand($array);
-                        } else {
-                            $top = $array;
-                        }
-                    } else {
-                        $access = new ArrayAccess($current->getOperand(), $this->processExpression());
-                        $current->setOperand($access);
-                    }
-
-                    $this->logNext("]");
-                    break;
-                default :
-
-                    $expression = $this->processToken();
-                    if ($current) {
-                        $current->setOperand($expression);
-                    } else {
-                        $top = $expression;
-                    }
-
-                    break;
+                $this->logNext("]");
+            } else {
+                $expression = $this->processToken();
+                if ($current) {
+                    $current->setOperand($expression);
+                } else {
+                    $top = $expression;
+                }
             }
         } while (!$this->endExpression());
 
@@ -334,12 +321,23 @@ class Expression
         return $top;
     }
 
+    public function processArrayAccess(Base $operand) {
+        if ($this->current()->getValue() == "]") {
+            $array = new ArrayAppend($operand);
+        } else {
+            $array = new ArrayAccess($operand, $this->processExpression());
+        }
+
+        return $array;
+    }
+
     public function endExpression() {
         return
             $this->current()->getValue() == ";"
             || $this->current()->getValue() == "}"
             || $this->current()->getValue() == ")"
             || $this->current()->getValue() == "]"
+            || $this->current()->getValue() == "as" /// foreach
             || $this->end();
     }
 
@@ -404,7 +402,7 @@ class Expression
 
             if ($this->getPriority($operator) <= $this->getPriority($itOp)) {
                 $this->log(
-                    //"iteration stop: " . (new Code($iteration))->getCode()  .
+                //"iteration stop: " . (new Code($iteration))->getCode()  .
                     " $operator(" . $this->getPriority($operator) . ") >= " . $itOp . "(" . $this->getPriority($itOp)
                     . ")",
                     true
@@ -413,7 +411,7 @@ class Expression
             }
 
             $this->log(
-                //"iteration next: " . (new Code($iteration))->getCode() .
+            //"iteration next: " . (new Code($iteration))->getCode() .
                 " $operator(" . $this->getPriority($operator) . ") < " . $itOp . "(" . $this->getPriority($itOp) . ")",
                 true
             );

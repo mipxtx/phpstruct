@@ -23,10 +23,9 @@ class Scope extends Base
         $this->scope[] = $expr;
     }
 
-    public function mergeScope(Scope $scope){
+    public function mergeScope(Scope $scope) {
         $this->scope = array_merge($this->scope, $scope->getScope());
     }
-
 
     /**
      * @return Base
@@ -39,15 +38,16 @@ class Scope extends Base
         return count($this->scope);
     }
 
-    public function getScope(){
+    public function getScope() {
         return $this->scope;
     }
 
-    public function getLevelShift($level){
+    public function getLevelShift($level) {
         $out = "";
-        for($i=0;$i<$level;$i++){
+        for ($i = 0; $i < $level; $i++) {
             $out .= "    ";
         }
-        return $level. $out;
+
+        return $level . $out;
     }
 } 

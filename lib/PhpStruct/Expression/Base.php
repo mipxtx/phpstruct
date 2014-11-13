@@ -8,9 +8,10 @@ namespace PhpStruct\Expression;
 
 class Base
 {
+
     private $locked = false;
 
-    public function hasScope(){
+    public function hasScope() {
         return false;
     }
 

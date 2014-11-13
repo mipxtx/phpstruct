@@ -6,8 +6,8 @@
 
 namespace PhpStruct\Expression;
 
-
-class ArrayAccess extends Base{
+class ArrayAccess extends Base
+{
 
     /**
      * @var Base
@@ -19,17 +19,16 @@ class ArrayAccess extends Base{
      */
     private $access;
 
-    public function __construct(Base $var, Base $access){
+    public function __construct(Base $var, Base $access) {
         $this->variable = $var;
         $this->access = $access;
     }
 
-    public function getVariable(){
+    public function getVariable() {
         return $this->variable;
     }
 
-    public function getAccess(){
+    public function getAccess() {
         return $this->access;
     }
-
 }

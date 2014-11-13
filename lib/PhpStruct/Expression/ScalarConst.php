@@ -8,7 +8,6 @@ namespace PhpStruct\Expression;
 
 class ScalarConst extends Base
 {
-
     use NamedTrait;
 
     /**
@@ -16,8 +15,9 @@ class ScalarConst extends Base
      */
     private $type;
 
-    public function setType($type){
+    public function setType($type) {
         $this->type = $type;
+
         return $this;
     }
 }

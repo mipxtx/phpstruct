@@ -102,17 +102,36 @@ class Token
      * @return bool
      */
     public function isDefinition() {
-        switch ($this->getType()) {
-
-            case T_ABSTRACT :
-            case T_FINAL :
-            case T_CLASS :
-            case T_TRAIT :
-            case T_INTERFACE :
-            case T_FUNCTION:
-                return true;
-            default:
-                return false;
-        }
+        return in_array(
+            $this->getType(),
+            [T_ABSTRACT, T_FINAL, T_CLASS, T_TRAIT, T_INTERFACE, T_FUNCTION]
+        );
     }
-} 
+
+    public function isBinary() {
+        return in_array(
+            $this->getValue(),
+            [".", ",", "+", "-", "*", "/", "%", "=", "->", "::", "=>", "&&", "||",]
+        );
+    }
+
+    public function isUnary() {
+        return in_array(
+            strtolower($this->getValue()),
+            [
+                "!",
+                "require",
+                "require_once",
+                "include",
+                "include_once",
+                "return",
+                "echo",
+                "print",
+                "exit",
+                "die",
+                "(int)",
+                "(float)"
+            ]
+        );
+    }
+}

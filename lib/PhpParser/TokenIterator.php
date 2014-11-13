@@ -80,7 +80,7 @@ class TokenIterator
 
                 $tId = $start + $id;
 
-                $rawToken = isset($this->tokens[$tId])?$this->tokens[$tId]:null;
+                $rawToken = $this->getRawTocken($tId);
 
                 if ($this->debug) {
 
@@ -105,8 +105,13 @@ class TokenIterator
     }
 
     public function createTokenById($id) {
-        $token = isset($this->tokens[$id])?$this->tokens[$id]:null;
-        return new Token($token, $id, $this);
+        return new Token($this->getRawTocken($id), $id, $this);
+    }
+
+    public function getRawTocken($id) {
+        $token = isset($this->tokens[$id]) ? $this->tokens[$id] : null;
+
+        return $token;
     }
 
     public function getLine() {

@@ -6,9 +6,7 @@
 
 namespace PhpStruct\Expression;
 
-
-interface OperatorInterface {
-
+interface OperatorInterface
+{
     public function addOperand(Base $operand);
-
-} 
+}

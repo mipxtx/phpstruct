@@ -8,10 +8,14 @@ namespace PhpDump;
 
 use PhpParser\FailException;
 use PhpStruct\Expression\ArrayAccess;
+use PhpStruct\Expression\ArrayAppend;
+use PhpStruct\Expression\ArrayDef;
 use PhpStruct\Expression\Base;
 use PhpStruct\Expression\Binary;
 use PhpStruct\Expression\DefineUsage;
+use PhpStruct\Expression\ForEachDef;
 use PhpStruct\Expression\FunctionCall;
+use PhpStruct\Expression\HasScopes;
 use PhpStruct\Expression\IfExpr;
 use PhpStruct\Expression\ScalarConst;
 use PhpStruct\Expression\Scope;
@@ -110,8 +114,13 @@ class Code
     }
 
     public function processExpressionIfExpr(IfExpr $in, $level) {
-        $out = "if (" . self::process($in->getBody(), $level) . ")";
-        $out .= self::processExpressionScope($in, $level);
+        $out = "if (" . $this->process($in->getCondition(), $level) . ")";
+        $out .= $this->processExpressionScope($in->getThen(), $level);
+
+        $else = $in->getElse();
+        if ($else) {
+            $out .= " else" . $this->processExpressionScope($else, $level);
+        }
 
         return $out;
     }
@@ -124,8 +133,6 @@ class Code
      */
     public function processExpressionScope(Scope $scope, $level) {
 
-        $shift = $this->getLevelShift($level);
-
         $out = "";
         if ($level >= 0) {
             $out = " {\n";
@@ -133,14 +140,14 @@ class Code
 
         foreach ($scope->getScope() as $line) {
             $out .= $this->getLevelShift($level + 1) . $this->process($line, $level + 1);
-            if (!$line->hasScope()) {
+            if (!($line instanceof HasScopes)) {
                 $out .= ";";
             }
             $out .= "\n";
         }
 
         if ($level >= 0) {
-            $out .= "$shift}\n";
+            $out .= $this->getLevelShift($level) . "}";
         }
 
         return $out;
@@ -156,7 +163,7 @@ class Code
         return "{$name}(" . implode(",", $args) . ")";
     }
 
-    public function processExpressionScalarConst(ScalarConst $in, $level) {
+    public function processExpressionScalarConst(ScalarConst $in) {
         return $in->getName();
     }
 
@@ -167,11 +174,22 @@ class Code
         return "{$var}[{$acc}]";
     }
 
-    public function processExpressionDefineUsage(DefineUsage $in, $level) {
+    public function processExpressionForEachDef(ForEachDef $in, $level) {
+        return
+            "foreach(" . $this->process($in->getItem(), $level) . " as " . $this->process($in->getEach(), $level) . ")"
+            .
+            $this->processExpressionScope($in->getBody(), $level);
+    }
+
+    public function processExpressionArrayAppend(ArrayAppend $in, $level) {
+        return $this->process($in->getVariable(), $level) . "[]";
+    }
+
+    public function processExpressionDefineUsage(DefineUsage $in) {
         return $in->getName();
     }
 
-    public function processExpressionVariable(Variable $in, $level) {
+    public function processExpressionVariable(Variable $in) {
 
         return '$' . $in->getName();
     }

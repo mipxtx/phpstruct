@@ -14,19 +14,16 @@ abstract class Operator extends Base
      */
     private $operator;
 
-
-
     abstract public function setOperand(Base $operand);
 
     abstract public function getOperand();
 
-    protected function setOperator($operator){
+    protected function setOperator($operator) {
 
         $this->operator = $operator;
     }
 
-    public function getOperator(){
+    public function getOperator() {
         return $this->operator;
     }
-
 }

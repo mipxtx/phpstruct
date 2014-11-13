@@ -6,25 +6,42 @@
 
 namespace PhpStruct\Expression;
 
-
-class IfExpr extends Scope{
-
+class IfExpr extends Base implements HasScopes
+{
 
     /**
      * @var Base
      */
-    private $body;
+    private $condition;
 
-    function __construct(Base $body) {
-        $this->body = $body;
+    /**
+     * @var
+     */
+    private $then;
+
+    /**
+     * @var
+     */
+    private $else;
+
+    function __construct(Base $condition, Base $body) {
+        $this->condition = $condition;
+        $this->then = $body;
     }
 
-    public function getBody(){
-        return $this->body;
+    public function getCondition() {
+        return $this->condition;
     }
 
-    public function hasScope(){
-        return true;
+    public function setElse(Base $else) {
+        $this->else = $else;
     }
 
-} 
+    public function getThen() {
+        return $this->then;
+    }
+
+    public function getElse() {
+        return $this->else;
+    }
+}
