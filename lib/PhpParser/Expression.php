@@ -12,16 +12,22 @@ use PhpStruct\Expression\ArrayAppend;
 use PhpStruct\Expression\ArrayDef;
 use PhpStruct\Expression\Base;
 use PhpStruct\Expression\Binary;
+use PhpStruct\Expression\CycleBreak;
 use PhpStruct\Expression\DefineUsage;
+use PhpStruct\Expression\EmptyStatement;
+use PhpStruct\Expression\ForDef;
 use PhpStruct\Expression\ForEachDef;
 use PhpStruct\Expression\FunctionCall;
 use PhpStruct\Expression\HasArgsInterface;
 use PhpStruct\Expression\IfExpr;
 use PhpStruct\Expression\ObjectCreate;
 use PhpStruct\Expression\Operator;
+use PhpStruct\Expression\QuotedString;
 use PhpStruct\Expression\ScalarConst;
 use PhpStruct\Expression\Scope;
+use PhpStruct\Expression\Ternary;
 use PhpStruct\Expression\Unary;
+use PhpStruct\Expression\UnarySuffix;
 use PhpStruct\Expression\Variable;
 
 class Expression
@@ -52,6 +58,7 @@ class Expression
         ["|"],
         ["&&"],
         ["||"],
+        ["?"],
         ["include", "include_once", "require", "require_once"],
         ["=", "+=", "-=", "*=", "/=", ".=", "%=", "&=", "|=", "^=", "<<=", ">>=", "=>"],
         ["and"],
@@ -108,6 +115,8 @@ class Expression
             case T_DIR:
             case T_FILE:
             case T_STRING:
+            case T_ISSET:
+            case T_EMPTY:
                 if ($token->next()->getValue() == "(") {
                     $out = new FunctionCall($token->getValue());
                     $this->logNext("func call");
@@ -118,6 +127,7 @@ class Expression
                 }
                 break;
             case T_LNUMBER :
+            case T_ENCAPSED_AND_WHITESPACE:
             case T_CONSTANT_ENCAPSED_STRING :
                 $out = new ScalarConst($token->getValue());
                 $out->setType($token->getType());
@@ -137,6 +147,28 @@ class Expression
                 $this->logNext("array");
                 $this->parseArgs($out);
                 break;
+            case Token::T_QUOTE :
+                $this->logNext("start quoted");
+
+                $out = new QuotedString();
+                while(!$this->current()->equal('"')){
+                    if($this->current()->equal("{")){
+                        $this->logNext("quoted expr");
+                        $expr = $this->processExpression();
+                        $out->addElement($expr);
+                        $this->logNext("quoted expr out");
+                    }else{
+                        $expr = $this->processToken();
+                        $out->addElement($expr);
+                    }
+                }
+                $this->logNext("quoted out");
+                break;
+            case T_BREAK:
+            case T_CONTINUE:
+                $out = new CycleBreak($token->getValue());
+                $this->logNext("break out");
+                break;
             default:
                 $this->log("unknown token");
                 die();
@@ -152,18 +184,21 @@ class Expression
     public function parseArgs(HasArgsInterface $object) {
         $this->logNext("start args");
 
-        if ($this->current()->getValue() != ")") {
-
+        if (!$this->current()->equal(["]", ")"])) {
             $expr = $this->processExpression();
             if ($expr instanceof Base) {
-
                 $args = [];
-
                 while ($expr instanceof Binary && $expr->getOperator() == ",") {
-                    $args[] = $expr->getOperand();
+                    $operand = $expr->getOperand();
+                    if ($operand instanceof Base) {
+                        $args[] = $operand;
+                    }
                     $expr = $expr->getFirstOperand();
                 }
-                $args[] = $expr;
+                if ($expr instanceof Base) {
+                    $args[] = $expr;
+                }
+
                 foreach (array_reverse($args) as $arg) {
                     $object->addArgument($arg);
                 }
@@ -228,6 +263,17 @@ class Expression
                     $body = $this->processBracesScope();
                     $expr = new ForEachDef($item, $iterator, $body);
                     break;
+                case T_FOR :
+                    $this->logNext("2for", 2);
+                    $def = $this->processExpression();
+                    $this->logNext("for cond");
+                    $cond = $this->processExpression();
+                    $this->logNext("for count");
+                    $count = $this->processExpression();
+                    $this->logNext("for out");
+                    $body = $this->processBracesScope();
+                    $expr = new ForDef($def, $cond, $count,$body);
+                    break;
                 default:
                     $expr = $this->processExpression();
             }
@@ -238,6 +284,19 @@ class Expression
         }
 
         return ($scope->count() == 1 && !$preserveScope) ? $scope->first() : $scope;
+    }
+
+    public function processUnary(Token $token, $top) {
+        $this->logNext("unary");
+        list($current, $top) = $this->createOperator(
+            $token->getValue(),
+            function ($operator, $operand) {
+                return new Unary($operator, $operand);
+            },
+            $top
+        );
+
+        return [$current, $top];
     }
 
     /**
@@ -252,24 +311,49 @@ class Expression
         $current = null;
         $top = null;
 
-        do {
+        while (!$this->endExpression()) {
             $token = $this->current();
-
-            if ($token->isBinary()) {
-                $this->logNext("binary");
-                list($current, $top) = $this->createOperator(
-                    $token->getValue(),
-                    function ($operator, $operand) {
-                        return new Binary($operator, $operand);
-                    },
-                    $top
-                );
+            if ($token->unarySuffix()) {
+                if ($top && !$current) {
+                    $old = $top;
+                    $top = $current = new UnarySuffix($token->getValue());
+                    $current->setOperand($old);
+                    $this->logNext("usuffix");
+                } elseif ($current && $current->getOperand() !== null) {
+                    $old = $current->getOperand();
+                    $new = new UnarySuffix($token->getValue());
+                    $new->setOperand($old);
+                    $current->setOperand($new);
+                    $this->logNext("usuffix");
+                } else {
+                    list($current, $top) = $this->processUnary($token, $top);
+                }
             } elseif ($token->isUnary()) {
-                $this->logNext("unary");
+                list($current, $top) = $this->processUnary($token, $top);
+            } elseif ($token->isBinary()) {
+
+                $isUnary = !$top || ($current instanceof Binary && $current->getOperand() === null);
+
+                if ($isUnary) {
+                    list($current, $top) = $this->processUnary($token, $top);
+                } else {
+                    $this->logNext("binary");
+                    list($current, $top) = $this->createOperator(
+                        $token->getValue(),
+                        function ($operator, $operand) {
+                            return new Binary($operator, $operand);
+                        },
+                        $top
+                    );
+                }
+            } elseif ($token->equal("?")) {
+                $this->logNext("ternary");
+                $then = $this->processExpression();
+                $this->logNext("ternary 2");
                 list($current, $top) = $this->createOperator(
                     $token->getValue(),
-                    function ($operator, $operand) {
-                        return new Unary($operator, $operand);
+                    function ($operator, $operand) use ($then) {
+                        return new Ternary($operand, $then);
                     },
                     $top
                 );
@@ -285,15 +369,17 @@ class Expression
                     $top = $expression;
                 }
             } elseif ($token->equal("[")) {
-                $this->logNext("[");
 
                 $operand = null;
 
                 if (!($top instanceof Operator)) {
+                    // array access
+                    $this->logNext("[");
                     $top = $this->processArrayAccess($top);
+                    $this->logNext("]");
                 } elseif (!$current || $current->getOperand() === null) {
+                    // array define
                     $array = new ArrayDef();
-                    $this->logNext("array");
                     $this->parseArgs($array);
 
                     if ($current) {
@@ -302,10 +388,11 @@ class Expression
                         $top = $array;
                     }
                 } else {
+                    // array access
+                    $this->logNext("[");
                     $current->setOperand($this->processArrayAccess($current->getOperand()));
+                    $this->logNext("]");
                 }
-
-                $this->logNext("]");
             } else {
                 $expression = $this->processToken();
                 if ($current) {
@@ -314,11 +401,11 @@ class Expression
                     $top = $expression;
                 }
             }
-        } while (!$this->endExpression());
-
+        }
+        $this->log("end expr");
         $this->level--;
 
-        return $top;
+        return $top ?: new EmptyStatement();
     }
 
     public function processArrayAccess(Base $operand) {
@@ -338,6 +425,7 @@ class Expression
             || $this->current()->getValue() == ")"
             || $this->current()->getValue() == "]"
             || $this->current()->getValue() == "as" /// foreach
+            || $this->current()->getValue() == ":" /// ternary
             || $this->end();
     }
 
@@ -382,9 +470,6 @@ class Expression
             $prev->setOperand($current);
         }
 
-        //$this->log("top now: " . (new Code($top))->getCode(), 1);
-        //$this->log("current now: " . (new Code($current))->getCode(), 1);
-
         return [$current, $top];
     }
 
@@ -393,29 +478,13 @@ class Expression
 
         $prev = null;
         while ($iteration instanceof Operator) {
-
             if ($iteration->locked()) {
                 break;
             }
-
             $itOp = $iteration->getOperator();
-
             if ($this->getPriority($operator) <= $this->getPriority($itOp)) {
-                $this->log(
-                //"iteration stop: " . (new Code($iteration))->getCode()  .
-                    " $operator(" . $this->getPriority($operator) . ") >= " . $itOp . "(" . $this->getPriority($itOp)
-                    . ")",
-                    true
-                );
                 break;
             }
-
-            $this->log(
-            //"iteration next: " . (new Code($iteration))->getCode() .
-                " $operator(" . $this->getPriority($operator) . ") < " . $itOp . "(" . $this->getPriority($itOp) . ")",
-                true
-            );
-
             $prev = $iteration;
             $iteration = $iteration->getOperand();
         }

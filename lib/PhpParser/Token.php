@@ -8,6 +8,8 @@ namespace PhpParser;
 
 class Token
 {
+    const T_TERNARY = 1000;
+    const T_QUOTE = 1001;
 
     private $type = 0;
 
@@ -22,6 +24,11 @@ class Token
 
     private $number;
 
+    static $map = [
+        "?" => self::T_TERNARY,
+        '"' => self::T_QUOTE
+    ];
+
     public function __construct($token, $number, TokenIterator $iterator) {
         $this->iterator = $iterator;
         $this->number = $number;
@@ -31,6 +38,7 @@ class Token
             $this->line = $token[2];
         } else {
             $this->value = $token;
+            $this->type = isset(self::$map[$token]) ? self::$map[$token] : 0;
         }
     }
 
@@ -61,8 +69,20 @@ class Token
         return $this->value;
     }
 
+    /**
+     * @param array|string $eq
+     * @return bool
+     */
     public function equal($eq) {
-        return $this->value == $eq;
+        if (!is_array($eq)) {
+            $eq = [$eq];
+        }
+        $out = false;
+        foreach ($eq as $item) {
+            $out |= $this->value == $item;
+        }
+
+        return $out;
     }
 
     public function prev($count = 1) {
@@ -111,7 +131,38 @@ class Token
     public function isBinary() {
         return in_array(
             $this->getValue(),
-            [".", ",", "+", "-", "*", "/", "%", "=", "->", "::", "=>", "&&", "||",]
+            [
+                ".",
+                ",",
+                "+",
+                "-",
+                "*",
+                "/",
+                "%",
+                "=",
+                "->",
+                "::",
+                "=>",
+                "&&",
+                "||",
+                "==",
+                "!=",
+                "!==",
+                "===",
+                ">",
+                "<",
+                "<=",
+                "+=",
+                "-=",
+                ".=",
+            ]
+        );
+    }
+
+    public function unarySuffix() {
+        return in_array(
+            $this->getValue(),
+            ["++", "--"]
         );
     }
 

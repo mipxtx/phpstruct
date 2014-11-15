@@ -12,14 +12,22 @@ use PhpStruct\Expression\ArrayAppend;
 use PhpStruct\Expression\ArrayDef;
 use PhpStruct\Expression\Base;
 use PhpStruct\Expression\Binary;
+use PhpStruct\Expression\CycleBreak;
 use PhpStruct\Expression\DefineUsage;
+use PhpStruct\Expression\EmptyStatement;
+use PhpStruct\Expression\ForDef;
 use PhpStruct\Expression\ForEachDef;
 use PhpStruct\Expression\FunctionCall;
 use PhpStruct\Expression\HasScopes;
 use PhpStruct\Expression\IfExpr;
+use PhpStruct\Expression\ObjectCreate;
+use PhpStruct\Expression\Operator;
+use PhpStruct\Expression\QuotedString;
 use PhpStruct\Expression\ScalarConst;
 use PhpStruct\Expression\Scope;
+use PhpStruct\Expression\Ternary;
 use PhpStruct\Expression\Unary;
+use PhpStruct\Expression\UnarySuffix;
 use PhpStruct\Expression\Variable;
 
 class Code
@@ -81,10 +89,7 @@ class Code
         $operator = $in->getOperator();
         $space = in_array($operator, ["->", "::"]) ? "" : " ";
 
-        return
-            ($in->locked() ? "(" : "")
-            . $first . $space . $operator . $space . $second
-            . ($in->locked() ? ")" : "");
+        return $first . $space . $operator . $space . $second;
     }
 
     public function processExpressionUnary(Unary $in, $level) {
@@ -111,6 +116,10 @@ class Code
         $out = $space . $this->process($operand, $level);
 
         return $operator . $out;
+    }
+
+    public function processExpressionUnarySuffix(UnarySuffix $in, $level) {
+        return $this->process($in->getOperand(), $level) . $in->getOperator();
     }
 
     public function processExpressionIfExpr(IfExpr $in, $level) {
@@ -159,8 +168,7 @@ class Code
         foreach ($in->getArgs() as $arg) {
             $args[] = $this->process($arg, $level + 1);
         }
-
-        return "{$name}(" . implode(",", $args) . ")";
+        return "{$name}(" . implode(", ", $args) . ")";
     }
 
     public function processExpressionScalarConst(ScalarConst $in) {
@@ -177,8 +185,7 @@ class Code
     public function processExpressionForEachDef(ForEachDef $in, $level) {
         return
             "foreach(" . $this->process($in->getItem(), $level) . " as " . $this->process($in->getEach(), $level) . ")"
-            .
-            $this->processExpressionScope($in->getBody(), $level);
+            . $this->processExpressionScope($in->getBody(), $level);
     }
 
     public function processExpressionArrayAppend(ArrayAppend $in, $level) {
@@ -189,8 +196,59 @@ class Code
         return $in->getName();
     }
 
-    public function processExpressionVariable(Variable $in) {
+    public function processExpressionTernary(Ternary $in, $level) {
+        return $this->process($in->getIf(), $level)
+        . " ?" . $this->process($in->getThen(), $level)
+        . ": " . $this->process($in->getOperand(), $level);
+    }
 
+    public function processExpressionArrayDef(ArrayDef $in, $level) {
+        $out = [];
+        foreach ($in->getArgs() as $item) {
+            $out[] = $this->process($item, $level + 1);
+        }
+
+        return "[" . implode(", ", $out) . "]";
+    }
+
+    public function processExpressionForDef(ForDef $in, $level) {
+        return "for("
+        . $this->process($in->getDefine(), $level + 1) . "; "
+        . $this->process($in->getCondition(), $level + 1) . "; "
+        . $this->process($in->getCounter(), $level + 1) . ")"
+        . $this->processExpressionScope($in->getBody(), $level);
+    }
+
+    public function processExpressionEmptyStatement(EmptyStatement $in) {
+        return "";
+    }
+
+    public function processExpressionQuotedString(QuotedString $in, $level) {
+        $out = '"';
+        foreach ($in->getElements() as $element) {
+            $brace = ($element instanceof Variable || $element instanceof Operator);
+            $out .= ($brace ? "{" : "") . $this->process($element, $level) . ($brace ? "}" : "");
+        }
+        $out .= '"';
+
+        return $out;
+    }
+
+    public function processExpressionObjectCreate(ObjectCreate $in, $level) {
+        $out = [];
+
+        foreach($in->getArgs() as $arg){
+            $out[] = $this->process($arg,$level);
+        }
+
+        return "new ".$in->getName() . "(" . implode(", ", $out);
+    }
+
+    public function processExpressionCycleBreak(CycleBreak $in) {
+        return $in->getType();
+    }
+
+    public function processExpressionVariable(Variable $in) {
         return '$' . $in->getName();
     }
 }
