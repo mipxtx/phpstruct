@@ -192,7 +192,7 @@ class Code
 
     public function processExpressionForEachDef(ForEachDef $in, $level) {
         return
-            "foreach(" . $this->process($in->getItem(), $level) . " as " . $this->process($in->getEach(), $level) . ")"
+            "foreach (" . $this->process($in->getItem(), $level) . " as " . $this->process($in->getEach(), $level) . ")"
             . $this->processExpressionScope($in->getBody(), $level);
     }
 
@@ -206,7 +206,7 @@ class Code
 
     public function processExpressionTernary(Ternary $in, $level) {
         return $this->process($in->getIf(), $level)
-        . " ?" . $this->process($in->getThen(), $level)
+        . " ? " . $this->process($in->getThen(), $level)
         . ": " . $this->process($in->getOperand(), $level);
     }
 
