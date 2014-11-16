@@ -135,4 +135,41 @@ class TokenIterator
     public function stopDebug() {
         $this->debug = false;
     }
+
+    public function getComment($id){
+
+        do{
+            $id--;
+            $token = $this->getRawTocken($id);
+            if(!isset($token[0])){
+                return "";
+            }elseif(in_array($token[0],[T_DOC_COMMENT, T_COMMENT])){
+                return $token[1];
+            }elseif($token[0] == T_WHITESPACE){
+                continue;
+            }else{
+                return "";
+            }
+        }while(true);
+    }
+
+    public function hasBlankLine($id){
+        do{
+            $id--;
+            $token = $this->getRawTocken($id);
+            if(!isset($token[0])){
+                return false;
+            }elseif(in_array($token[0],[T_DOC_COMMENT, T_COMMENT])){
+                continue;
+            }elseif($token[0] == T_WHITESPACE){
+                if(substr_count($token[1], "\n") > 1){
+                    return true;
+                }
+                continue;
+            }else{
+                return false;
+            }
+        }while(true);
+    }
+
 }

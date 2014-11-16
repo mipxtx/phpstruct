@@ -11,6 +11,10 @@ class Base
 
     private $locked = false;
 
+    private $headBlankLine;
+
+    private $comment = "";
+
     public function hasScope() {
         return false;
     }
@@ -22,4 +26,33 @@ class Base
     public function locked() {
         return $this->locked;
     }
+
+    /**
+     * @return string
+     */
+    public function getComment() {
+        return $this->comment;
+    }
+
+    /**
+     * @param string $comment
+     */
+    public function setComment($comment) {
+        $this->comment = $comment;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function hasHeadBlankLine() {
+        return $this->headBlankLine;
+    }
+
+    /**
+     *
+     */
+    public function setHeadBlankLine() {
+        $this->headBlankLine = true;
+    }
+
 }

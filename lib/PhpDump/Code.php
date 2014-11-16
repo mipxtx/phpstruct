@@ -148,6 +148,14 @@ class Code
         }
 
         foreach ($scope->getScope() as $line) {
+
+            if($line->hasHeadBlankLine()){
+                $out .= $this->getLevelShift($level) . "\n";
+            }
+
+            if($line->getComment()){
+                $out .= $this->getLevelShift($level).$line->getComment() . "\n";
+            }
             $out .= $this->getLevelShift($level + 1) . $this->process($line, $level + 1);
             if (!($line instanceof HasScopes)) {
                 $out .= ";";
@@ -241,7 +249,7 @@ class Code
             $out[] = $this->process($arg,$level);
         }
 
-        return "new ".$in->getName() . "(" . implode(", ", $out);
+        return "new ".$in->getName() . "(" . implode(", ", $out) . ")";
     }
 
     public function processExpressionCycleBreak(CycleBreak $in) {

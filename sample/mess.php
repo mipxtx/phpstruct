@@ -71,7 +71,7 @@ if ($getoids) {
     $hour = $oldVars->get('hour');
     $status = $oldVars->get('status');
     $notStatus = $oldVars->get('not_status');
-    
+
     //
     $statFrom = $getoids . sprintf('%02d0000', strlen($hour) ? (int)$hour : 0);
     $statTo = $getoids . sprintf('%02d5959', strlen($hour) ? (int)$hour : 23);
@@ -79,12 +79,12 @@ if ($getoids) {
     $res = $adminAnketa->getComplaintStatisticsOids($moderatorId, $statFrom, $statTo, $status, $notStatus);
 
     $created = '';
-    
+
     $wasPrinted = [];
 
     echo '<style>a { text-decoration:none }</style>' . substr($getoids, -2, 2) . '-' . substr($getoids, 4, 2) . '-'
         . substr($getoids, 0, 4) . '<table border=1>';
-    
+
     foreach ($res as $v) {
         if (
             (($part == 'anketa') && ($v['anketas'] > 0))
@@ -102,19 +102,19 @@ if ($getoids) {
                 $created = $v['tm'];
                 echo substr($created, -2, 2) . '<br>';
             }
-            
+
             echo '<br>';
-                
+
             echo '<a href="/support/complains.phtml?search_option=id&amp;search_value=' . $v['anketa_id']
                 . '" target="_blank">' . $v['anketa_id'] . '</a>';
-            
+
             echo '<sup style="color:red">' . $v['complaint_total_count'] . '</sup> ';
-            
+
             if ($part == 'photo') {
                 echo '<small>(' . $v['photos_moderated'] . ')</small>';
             }
             echo ' <a href="' . Front_UrlGen::getAnketaUrlById($v['anketa_id']) . '" target="_blank">*</a>';
-            
+
             if ($v['status'] == "clear" || $v['status'] == "delete") {
                 $status = Language_Helper::getText('Staff', 'AdminstatComplaint\\' . $v['status']);
             } else {
@@ -145,7 +145,6 @@ tmpl_set(
     )
 );
 
-
 // месяц
 tmpl_set($tplSelect, '/SELECT_name', 'month');
 foreach ($_MONTHS as $k => $v) {
@@ -162,7 +161,6 @@ foreach ($_MONTHS as $k => $v) {
 }
 tmpl_set($tplList, '/STAT_SELECT_month', tmpl_parse($tplSelect));
 tmpl_unset($tplSelect);
-
 
 // месяц
 tmpl_set($tplSelect, '/SELECT_name', 'year');
@@ -181,7 +179,6 @@ for ($i = 2004; $i <= date('Y'); $i++) {
 tmpl_set($tplList, '/STAT_SELECT_year', tmpl_parse($tplSelect));
 tmpl_unset($tplSelect);
 
-
 $statFrom = "{$year0}-{$month0}-01";
 $statTo = "{$year0}-{$month0}-" . date('t', mktime(0, 0, 0, $month0, 1, $year0)) . ' 23:59:59';
 
@@ -198,7 +195,6 @@ foreach ($groupPrivChecker->getEmpList() as $item) {
 }
 
 $ma = array();
-
 
 // модераторы
 tmpl_set($tplSelect, '/SELECT_name', 'moderator_id');
@@ -357,11 +353,11 @@ if (!empty($res)) {
                 'STAT_date' => $year . $month . $k,
                 'moderator_id' => $moderatorId,
                 'STAT_count_anket' => ($isadmin ?
-                        '<a target="_blank" href="adminstat_complaint.phtml?getoids=' . $year . $month0 . $i_day
-                        . '&part=anketa&moderator_id=' . $moderatorId . '">' . $statNum . '</a>' : $statNum),
+                    '<a target="_blank" href="adminstat_complaint.phtml?getoids=' . $year . $month0 . $i_day
+                    . '&part=anketa&moderator_id=' . $moderatorId . '">' . $statNum . '</a>' : $statNum),
                 'STAT_count_photo' => ($isadmin ?
-                        '<a target="_blank" href="adminstat_complaint.phtml?getoids=' . $year . $month0 . $i_day
-                        . '&part=photo&moderator_id=' . $moderatorId . '">' . $statPhoto . '</a>' : $statPhoto),
+                    '<a target="_blank" href="adminstat_complaint.phtml?getoids=' . $year . $month0 . $i_day
+                    . '&part=photo&moderator_id=' . $moderatorId . '">' . $statPhoto . '</a>' : $statPhoto),
 
             )
         );

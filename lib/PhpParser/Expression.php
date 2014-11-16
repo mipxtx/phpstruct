@@ -138,7 +138,7 @@ class Expression
                 $this->logNext("var out");
                 break;
             case T_NEW:
-                $out = new ObjectCreate($token->getValue());
+                $out = new ObjectCreate($token->next()->getValue());
                 $this->logNext("var 2obj", 2);
                 $this->parseArgs($out);
                 break;
@@ -242,6 +242,7 @@ class Expression
             }
             $this->log("process start");
 
+            $token = $this->current();
             switch ($this->current()->getType()) {
                 case T_IF :
                     $this->logNext("2if", 2);
@@ -277,6 +278,13 @@ class Expression
                 default:
                     $expr = $this->processExpression();
             }
+
+
+            if($token->hasBlankLine()){
+                $expr->setHeadBlankLine();
+            }
+
+            $expr->setComment(trim($token->getComment()));
 
             $scope->addExpression($expr);
 

@@ -185,4 +185,12 @@ class Token
             ]
         );
     }
+
+    public function getComment(){
+        return $this->iterator->getComment($this->getId());
+    }
+
+    public function hasBlankLine(){
+        return $this->iterator->hasBlankLine($this->getId());
+    }
 }
