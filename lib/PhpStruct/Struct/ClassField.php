@@ -6,20 +6,18 @@
 
 namespace PhpStruct\Struct;
 
-class ClassField
+use PhpStruct\Base;
+use PhpStruct\Expression\Variable;
+
+class ClassField extends Base
 {
 
-    private $name;
-
-    private $access;
+    private $var;
 
     private $default;
 
-    private $static = false;
-
-    public function __construct($access, $name) {
-        $this->access = $access;
-        $this->name = $name;
+    public function __construct(Variable $variable) {
+        $this->var = $variable;
     }
 
     /**
@@ -32,13 +30,6 @@ class ClassField
     /**
      * @return mixed
      */
-    public function getAccess() {
-        return $this->access;
-    }
-
-    /**
-     * @return mixed
-     */
     public function getDefault() {
         return $this->default;
     }
@@ -46,21 +37,8 @@ class ClassField
     /**
      * @return mixed
      */
-    public function getName() {
-        return $this->name;
+    public function getVariable() {
+        return $this->var;
     }
 
-    /**
-     * @return boolean
-     */
-    public function isStatic() {
-        return $this->static;
-    }
-
-    /**
-     *
-     */
-    public function setStatic() {
-        $this->static = true;
-    }
 }

@@ -6,6 +6,8 @@
 
 namespace PhpStruct\Expression;
 
+use PhpStruct\Base;
+
 class FunctionCall extends Base implements HasArgsInterface
 {
     use ArgsTrait, NamedTrait;

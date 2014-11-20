@@ -10,7 +10,7 @@ use PhpDump\Code;
 use PhpStruct\Expression\ArrayAccess;
 use PhpStruct\Expression\ArrayAppend;
 use PhpStruct\Expression\ArrayDef;
-use PhpStruct\Expression\Base;
+use PhpStruct\Base;
 use PhpStruct\Expression\Binary;
 use PhpStruct\Expression\CycleBreak;
 use PhpStruct\Expression\DefineUsage;
@@ -29,6 +29,11 @@ use PhpStruct\Expression\Ternary;
 use PhpStruct\Expression\Unary;
 use PhpStruct\Expression\UnarySuffix;
 use PhpStruct\Expression\Variable;
+use PhpStruct\Struct\AbstractDataType;
+use PhpStruct\Struct\ClassField;
+use PhpStruct\Struct\ModifiersInterface;
+use PhpStruct\Struct\ProcArgument;
+use PhpStruct\Struct\Procedure;
 
 class Expression
 {
@@ -66,6 +71,7 @@ class Expression
         ["or"],
         [","],
         ["exit", "die", "echo", "print", "return"],
+        ["public", "protected", "private", "abstract", "final", "static"]
     ];
 
     private $level = 0;
@@ -75,16 +81,12 @@ class Expression
         foreach (["next" => "0;31", "start" => "0;32", "token" => "1;33", "arg " => "0;34"] as $key => $color) {
             $msg = str_replace($key, "\033[{$color}m{$key}\033[0m", $msg);
         }
-
         $msg = str_replace("\t", "    ", $msg);
-
         $shift = "";
         for ($i = 0; $i < $this->level; $i++) {
             $shift .= " ";
         }
-
         if (strpos($msg, "\n")) {
-
             $lines = explode("\n", $msg);
             $out = [];
             foreach ($lines as $i => $line) {
@@ -94,7 +96,6 @@ class Expression
         } else {
             $msg = $shift . $msg;
         }
-
         $this->cLog($msg, $skipTokens);
     }
 
@@ -103,7 +104,7 @@ class Expression
     }
 
     /**
-     * @return Base
+     * @return \PhpStruct\Base
      */
     public function processToken() {
         $token = $this->current();
@@ -151,13 +152,13 @@ class Expression
                 $this->logNext("start quoted");
 
                 $out = new QuotedString();
-                while(!$this->current()->equal('"')){
-                    if($this->current()->equal("{")){
+                while (!$this->current()->equal('"')) {
+                    if ($this->current()->equal("{")) {
                         $this->logNext("quoted expr");
                         $expr = $this->processExpression();
                         $out->addElement($expr);
                         $this->logNext("quoted expr out");
-                    }else{
+                    } else {
                         $expr = $this->processToken();
                         $out->addElement($expr);
                     }
@@ -209,14 +210,17 @@ class Expression
         return $object;
     }
 
+    /**
+     * @return Scope
+     */
     public function processBracesScope() {
 
         if ($this->current()->getValue() == "{") {
-            $this->logNext("scope start");
-            $scope = $this->process(false, true);
-            $this->logNext("scope end");
+            $this->logNext("brscope start");
+            $scope = $this->process(false);
+            $this->logNext("brscope end");
         } else {
-            $scope = $this->process(true, true);
+            $scope = $this->process(true);
         }
 
         return $scope;
@@ -224,11 +228,12 @@ class Expression
 
     /**
      * @param bool $single
-     * @return Base
+     * @throws FailException
+     * @return Scope
      */
-    public function process($single = false, $preserveScope = false) {
+    public function process($single = false) {
         $scope = new Scope();
-        while (!$this->current()->isDefinition() && !$this->end()) {
+        while (!$this->end() && $this->current()->getValue() != "}") {
 
             if ($this->current()->getValue() == ";") {
                 if ($single) {
@@ -241,6 +246,7 @@ class Expression
                 break;
             }
             $this->log("process start");
+            $expr = null;
 
             $token = $this->current();
             switch ($this->current()->getType()) {
@@ -273,25 +279,137 @@ class Expression
                     $count = $this->processExpression();
                     $this->logNext("for out");
                     $body = $this->processBracesScope();
-                    $expr = new ForDef($def, $cond, $count,$body);
+                    $expr = new ForDef($def, $cond, $count, $body);
                     break;
+                case T_CLASS :
+                case T_INTERFACE:
+                case T_TRAIT:
+
+                    $this->logNext("class start");
+                    $name = $this->current()->getValue();
+                    $expr = new AbstractDataType(strtolower($token->getValue()), $name);
+                    $type = "";
+                    do {
+                        switch (strtolower($this->current()->getValue())) {
+                            case "extends" :
+                            case "implements":
+                                $type = strtolower($this->current()->getType());
+                                break;
+                            case "," :
+                                break;
+                            default :
+                                if ($type == "extends") {
+                                    $expr->addExtends($this->current()->getValue());
+                                } elseif ($type == "implements") {
+                                    $expr->addImplements($this->current()->getValue());
+                                }
+                                break;
+                        }
+                        $this->logNext("extends");
+                    } while ($this->current()->equal("{"));
+
+
+                    $body = $this->processBracesScope();
+
+
+
+                    foreach ($body->getScope() as $line) {
+                        if ($line instanceof Procedure) {
+                            $expr->addMethod($line);
+                        } else {
+
+                            if ($line instanceof Binary) {
+                                $var = $line->getFirstOperand();
+                                $default = $line->getOperand();
+                            } else {
+                                $var = $line;
+                                $default = null;
+                            }
+                            $field = new ClassField($var);
+                            $field->copyModifiers($line);
+                        }
+                    }
+
+
+                    print_r($expr);
+
+                    die();
+
+                    break;
+                case T_FUNCTION:
+                    $this->logNext("func");
+                    $name = $this->current()->getValue();
+                    $expr = new Procedure($name);
+                    $this->logNext("func name");
+                    $this->logNext("func args");
+
+                    while ($this->current()->getValue() != ")") {
+
+                        $type = null;
+                        if ($this->current()->getType() != T_VARIABLE) {
+                            $type = $this->current()->getValue();
+                            $this->logNext("func arg type");
+                        }
+
+                        $name = $this->current()->getValue();
+                        $param = new ProcArgument($name, $type);
+                        $expr->addArg($param);
+                        $this->logNext("func arg value");
+
+                        if ($this->current()->getValue() == ",") {
+                            $this->logNext("func arg plain");
+                        } elseif ($this->current()->getValue() == "=") {
+
+                            $this->logNext("func arg def");
+
+                            $param->setDefault($this->processExpression([","]));
+
+                            if ($this->current()->getValue() == ",") {
+                                $this->logNext("func arg end");
+                            }
+                        } else {
+                            throw new FailException("func params parsing " . $this->current());
+                        }
+                    };
+
+                    $this->logNext("func args end");
+
+
+
+                    //$this->processModifiers($out, $start);
+                    $body = $this->processBracesScope();
+
+                    $expr->setBody($body);
+
+                    break;
+
+                case T_VAR:
+                case T_PUBLIC:
+                case T_PROTECTED:
+                case T_PRIVATE:
+                case T_STATIC:
+                case T_FINAL:
+                case T_ABSTRACT:
+                    $this->next();
+                    break;
+
                 default:
+                    $start = $this->current();
                     $expr = $this->processExpression();
+                    $this->processModifiers($expr, $start);
             }
+            if ($expr) {
+                if ($token->hasBlankLine()) {
+                    $expr->setHeadBlankLine();
+                }
 
-
-            if($token->hasBlankLine()){
-                $expr->setHeadBlankLine();
+                $expr->setComment(trim($token->getComment()));
+                $scope->addExpression($expr);
+                $this->log("process end");
             }
-
-            $expr->setComment(trim($token->getComment()));
-
-            $scope->addExpression($expr);
-
-            $this->log("process end");
         }
 
-        return ($scope->count() == 1 && !$preserveScope) ? $scope->first() : $scope;
+        return $scope;
     }
 
     public function processUnary(Token $token, $top) {
@@ -308,9 +426,9 @@ class Expression
     }
 
     /**
-     * @return Base
+     * @return \PhpStruct\Base
      */
-    public function processExpression() {
+    public function processExpression(array $stopOn = []) {
         $this->level++;
 
         $this->log("start expr");
@@ -319,7 +437,7 @@ class Expression
         $current = null;
         $top = null;
 
-        while (!$this->endExpression()) {
+        while (!$this->endExpression() && !in_array($this->current()->getValue(), $stopOn)) {
             $token = $this->current();
             if ($token->unarySuffix()) {
                 if ($top && !$current) {
@@ -368,7 +486,7 @@ class Expression
             } elseif ($token->equal("(")) {
                 $this->logNext("in (");
                 $expression = $this->processExpression();
-                $expression->lock();
+                $expression->brackets();
                 $this->logNext("out (");
 
                 if ($current) {
@@ -460,7 +578,7 @@ class Expression
     /**
      * @param string $operator
      * @param callable $factory
-     * @param Base $top
+     * @param \PhpStruct\Base $top
      * @return Operator[]
      */
     public function createOperator($operator, callable $factory, $top) {
@@ -486,7 +604,7 @@ class Expression
 
         $prev = null;
         while ($iteration instanceof Operator) {
-            if ($iteration->locked()) {
+            if ($iteration->hasBrackets()) {
                 break;
             }
             $itOp = $iteration->getOperator();
@@ -498,5 +616,32 @@ class Expression
         }
 
         return $prev;
+    }
+
+    public function processModifiers(Base $target, Token $current) {
+
+        do {
+            $current = $current->prev();
+            $exit = false;
+            switch ($current->getType()) {
+                case T_VAR:
+                case T_PUBLIC:
+                case T_PROTECTED:
+                case T_PRIVATE:
+                    $target->setVisibility(strtolower($current->getValue()));
+                    break;
+                case T_ABSTRACT:
+                    $target->setAbstract();
+                    break;
+                case T_FINAL:
+                    $target->setFinal();
+                    break;
+                case T_STATIC:
+                    $target->setStatic();
+                    break;
+                default:
+                    $exit = true;
+            }
+        } while (!$exit);
     }
 }

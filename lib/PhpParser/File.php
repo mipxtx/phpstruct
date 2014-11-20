@@ -18,8 +18,13 @@ class File
         $this->setIterator($iterator);
     }
 
+    /**
+     * @return \PhpStruct\Struct\File
+     * @throws FailException
+     */
     public function process() {
         $file = new \PhpStruct\Struct\File($this->path);
+
         $open = $this->current();
         if (!$open->isTypeOf(T_OPEN_TAG)) {
             throw new FailException("start tag must be a first token, {$open} given in {$this->path}");
@@ -27,13 +32,18 @@ class File
 
         $this->next();
 
+
+
         $expressionProcessor = new Expression($this->getIterator());
-        $definitionProcessor = new Definition($this->getIterator(), $expressionProcessor);
+        //$definitionProcessor = new Definition($this->getIterator(), $expressionProcessor);
+
 
         if ($this->isEnabled()) {
             $expressionProcessor->enableDebug();
-            $definitionProcessor->enableDebug();
+            //$definitionProcessor->enableDebug();
         }
+
+
 
         while (!$this->end()) {
             $token = $this->current();
@@ -42,23 +52,41 @@ class File
                 $value = $this->next();
                 $this->next(); // ;
                 $file->setNameSpace($value);
-            } elseif ($token->isDefinition()) {
+            } else {
+                $this->log("start expr");
+                $scope = $expressionProcessor->process();
+
+
+
+                foreach($scope->getScope() as $line){
+
+                }
+                /*
+                if ($scope instanceof Scope) {
+                    $file->mergeScope($scope);
+                } else {
+                    $file->addExpression($scope);
+                }*/
+            }
+
+
+
+            /*elseif ($token->isDefinition()) {
+
                 $this->log("start def");
                 $file->addCass($definitionProcessor->process());
                 $this->log("after process class");
             } else {
                 $this->log("start expr");
-
                 $scope = $expressionProcessor->process();
-
-                define("DEBUG", 1);
-
                 if ($scope instanceof Scope) {
                     $file->mergeScope($scope);
                 } else {
                     $file->addExpression($scope);
                 }
-            }
+            }*/
+
+
         }
 
         return $file;

@@ -6,9 +6,9 @@
 
 namespace PhpStruct\Struct;
 
-use PhpStruct\Expression\Base;
+use PhpStruct\Base;
 
-class Procedure
+class Procedure extends Base
 {
 
     /**
@@ -22,7 +22,7 @@ class Procedure
     private $argList;
 
     /**
-     * @var Base
+     * @var \PhpStruct\Base
      */
     private $body;
 

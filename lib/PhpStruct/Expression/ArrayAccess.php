@@ -6,6 +6,8 @@
 
 namespace PhpStruct\Expression;
 
+use PhpStruct\Base;
+
 class ArrayAccess extends Base
 {
 

@@ -6,6 +6,8 @@
 
 namespace PhpStruct\Expression;
 
+use PhpStruct\Base;
+
 interface OperatorInterface
 {
     public function addOperand(Base $operand);

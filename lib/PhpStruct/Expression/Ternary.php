@@ -7,6 +7,8 @@
 namespace PhpStruct\Expression;
 
 
+use PhpStruct\Base;
+
 class Ternary extends Operator{
 
     private $if;

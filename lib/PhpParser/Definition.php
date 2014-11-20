@@ -7,7 +7,7 @@
 namespace PhpParser;
 
 use PhpStruct\Struct\ClassField;
-use PhpStruct\Struct\AbstractDef;
+use PhpStruct\Struct\AbstractDataType;
 use PhpStruct\Struct\ClassDef;
 use PhpStruct\Struct\TraitDef;
 use PhpStruct\Struct\InterfaceDef;
@@ -20,7 +20,7 @@ class Definition
     use SupportTrait;
 
     /**
-     * @var AbstractDef
+     * @var AbstractDataType
      */
     private $currentDef;
 
@@ -32,7 +32,19 @@ class Definition
 
         $token = $this->current();
 
+        $abstract = false;
+        $final = false;
+
+        do{
+
+
+
+        }while(true);
+
+
+
         switch ($token->getType()) {
+
             case T_ABSTRACT :
             case T_FINAL :
                 if ($token->next()->isTypeOf(T_CLASS)) {
@@ -54,14 +66,14 @@ class Definition
     }
 
     /**
-     * @return AbstractDef
+     * @return AbstractDataType
      */
     public function getCurrentDef() {
         return $this->currentDef;
     }
 
     /**
-     * @return AbstractDef
+     * @return AbstractDataType
      * @throws FailException
      */
     public function process() {

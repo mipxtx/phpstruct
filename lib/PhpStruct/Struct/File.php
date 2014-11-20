@@ -6,10 +6,10 @@
 
 namespace PhpStruct\Struct;
 
-use PhpStruct\Expression\Base;
+use PhpStruct\Base;
 use PhpStruct\Expression\Scope;
 
-class File extends Scope
+class File extends Base
 {
 
     /**
@@ -37,6 +37,11 @@ class File extends Scope
      */
     private $classes = [];
 
+    /**
+     * @var Scope
+     */
+    private $code;
+
     public function __construct($name) {
         $this->path = $name;
         $this->code = new Scope();
@@ -50,7 +55,7 @@ class File extends Scope
         $this->functions[] = $function;
     }
 
-    public function addCass(AbstractDef $class) {
+    public function addCass(AbstractDataType $class) {
         $this->classes[] = $class;
     }
 
@@ -60,4 +65,28 @@ class File extends Scope
             $this->use[$alias] = $full;
         }
     }
+
+    public function mergeScope(Scope $scope){
+        $this->code->mergeScope($scope);
+    }
+    public  function addExpression(Base $expr){
+        $this->code->addExpression($expr);
+    }
+
+    public function getFunctions(){
+        return $this->functions;
+    }
+
+    public function getClasses(){
+        return $this->classes;
+    }
+
+    public function getNamespace(){
+        return $this->namespace;
+    }
+
+    public function getCode(){
+        return $this->code;
+    }
+
 }

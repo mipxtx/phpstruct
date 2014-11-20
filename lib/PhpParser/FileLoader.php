@@ -24,6 +24,10 @@ class FileLoader
         $this->fileProcessor = new File($filename, $iterator);
     }
 
+    /**
+     * @return \PhpStruct\Struct\File
+     * @throws FailException
+     */
     public function process() {
         return $this->fileProcessor->process();
     }

@@ -118,16 +118,6 @@ class Token
         return $this->number;
     }
 
-    /**
-     * @return bool
-     */
-    public function isDefinition() {
-        return in_array(
-            $this->getType(),
-            [T_ABSTRACT, T_FINAL, T_CLASS, T_TRAIT, T_INTERFACE, T_FUNCTION]
-        );
-    }
-
     public function isBinary() {
         return in_array(
             $this->getValue(),
@@ -181,16 +171,22 @@ class Token
                 "exit",
                 "die",
                 "(int)",
-                "(float)"
+                "(float)",
+                "public",
+                "protected",
+                "private",
+                "abstract",
+                "final",
+                "static",
             ]
         );
     }
 
-    public function getComment(){
+    public function getComment() {
         return $this->iterator->getComment($this->getId());
     }
 
-    public function hasBlankLine(){
+    public function hasBlankLine() {
         return $this->iterator->hasBlankLine($this->getId());
     }
 }

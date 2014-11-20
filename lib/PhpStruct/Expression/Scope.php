@@ -7,6 +7,7 @@
 namespace PhpStruct\Expression;
 
 use PhpParser\Helper;
+use PhpStruct\Base;
 
 class Scope extends Base
 {

@@ -6,8 +6,16 @@
 
 namespace PhpStruct\Struct;
 
-class AbstractDef
+use PhpStruct\Base;
+
+class AbstractDataType extends Base
 {
+    /**
+     * class, interface, trait etc
+     *
+     * @var string
+     */
+    private $type;
 
     private $name;
 
@@ -21,9 +29,18 @@ class AbstractDef
     private $fields = [];
 
     /**
-     * @var Method[]
+     * @var Procedure[]
      */
     private $methods = [];
+
+    public function __construct($type, $name) {
+        $this->type = $type;
+        $this->name = $name;
+    }
+
+    public function getType() {
+        return $this->type;
+    }
 
     /**
      * @return ClassField[]
@@ -41,13 +58,6 @@ class AbstractDef
 
     public function getName() {
         return $this->name;
-    }
-
-    /**
-     * @param string $name
-     */
-    public function setName($name) {
-        $this->name = $name;
     }
 
     /**
@@ -78,7 +88,11 @@ class AbstractDef
         $this->implements[] = $implements;
     }
 
-    public function addMethod(Method $method) {
+    public function addMethod(Procedure $method) {
         $this->methods[] = $method;
     }
-} 
+
+    public function getMethods() {
+        return $this->methods;
+    }
+}
