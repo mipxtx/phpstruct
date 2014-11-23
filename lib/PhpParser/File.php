@@ -2,6 +2,8 @@
 namespace PhpParser;
 
 use PhpStruct\Expression\Scope;
+use PhpStruct\Struct\AbstractDataType;
+use PhpStruct\Struct\Procedure;
 
 /**
  * @author: mix
@@ -59,7 +61,13 @@ class File
 
 
                 foreach($scope->getScope() as $line){
-
+                    if($line instanceof AbstractDataType){
+                        $file->addCass($line);
+                    }elseif($line instanceof Procedure){
+                        $file->addFunction($line);
+                    }else{
+                        $file->addExpression($line);
+                    }
                 }
                 /*
                 if ($scope instanceof Scope) {

@@ -14,12 +14,8 @@ class Processor
 
         $processor = $this->findProcessor($code);
         $out = "";
-        if ($code->hasHeadBlankLine()) {
-            $out .= $processor->getLevelShift($level) . "\n";
-        }
-        if ($code->getComment()) {
-            $out .= $processor->getLevelShift($level + 1) . $code->getComment() . "\n";
-        }
+
+
         $out .= $processor->process($code, $level);
         if ($code->hasBrackets()) {
             $out = "($out)";
@@ -59,4 +55,6 @@ class Processor
         }
         throw new FailException("cant create " . $name);
     }
+
+
 }

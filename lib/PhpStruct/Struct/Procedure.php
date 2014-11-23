@@ -19,7 +19,7 @@ class Procedure extends Base
     /**
      * @var ProcArgument[]
      */
-    private $argList;
+    private $argList = [];
 
     /**
      * @var \PhpStruct\Base

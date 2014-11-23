@@ -15,8 +15,6 @@ abstract class BaseDump
 
     public abstract function process($in, $level);
 
-
-
     /**
      * @param $level
      * @return string
@@ -37,5 +35,26 @@ abstract class BaseDump
      */
     public function processExpression(Base $scope, $level){
         return (new Processor())->process($scope,$level);
+    }
+
+    public function processModifiers(Base $code){
+        $out = $code->isAbstract()?"abstract " : "";
+        $out .= $code->getVisibility()?$code->getVisibility() . " ":"";
+        $out .= $code->isStatic()?"static " : "";
+        $out .= $code->isFinal()?"final " : "";
+
+        return $out;
+    }
+
+    public function processHead(Base $code, $level){
+        $out = "";
+        if ($code->hasHeadBlankLine()) {
+            $out .= "\n" . $this->getLevelShift($level);
+        }
+        if ($code->getComment()) {
+            $out .= $code->getComment() . "\n" . $this->getLevelShift($level);
+        }
+
+        return $out;
     }
 }

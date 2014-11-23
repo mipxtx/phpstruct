@@ -15,6 +15,18 @@ class Base
 
     private $comment = "";
 
+
+    private $static = false;
+
+    private $abstract = false;
+
+    private $final = false;
+
+    private $visibility = "";
+
+
+
+
     public function hasScope() {
         return false;
     }
@@ -55,15 +67,6 @@ class Base
         $this->headBlankLine = true;
     }
 
-
-
-    private $static = false;
-
-    private $abstract = false;
-
-    private $final = false;
-
-    private $visibility = "public";
 
     /**
      * @return boolean
@@ -124,8 +127,11 @@ class Base
     public function copyModifiers(Base $from){
         $this->visibility = $from->getVisibility();
         $this->abstract = $from->isAbstract();
-        $this->static = $from->isAbstract();
+        $this->static = $from->isStatic();
         $this->final = $from->isFinal();
+
+        $this->comment = $from->getComment();
+        $this->headBlankLine = $from->hasHeadBlankLine();
     }
 
 }

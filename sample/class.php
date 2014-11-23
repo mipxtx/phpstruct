@@ -1,13 +1,6 @@
 <?php
 
 /**
- * Class O
- */
-class O {
-    public function oo(){}
-}
-
-/**
  * Class A
  */
 abstract class A extends O implements BB, CC
@@ -32,12 +25,12 @@ abstract class A extends O implements BB, CC
     }
 
     /**
-     * @param int $a
+     * @param O $a
      * @param int $b
      * @return int
      */
-    public static function ccc($a, $b) {
-        return $a + $b;
+    public static function ccc(O $a = null, $b=3) {
+        return $a + $b + self::$a;
     }
 }
 
@@ -48,6 +41,12 @@ interface BB
 
 interface CC
 {
-    public static function ccc($a, $b);
+    public static function ccc(O $a = null, $b = 3);
 }
 
+/**
+ * Class O
+ */
+class O {
+    public function oo(){}
+}

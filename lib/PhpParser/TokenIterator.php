@@ -145,7 +145,7 @@ class TokenIterator
                 return "";
             }elseif(in_array($token[0],[T_DOC_COMMENT, T_COMMENT])){
                 return $token[1];
-            }elseif($token[0] == T_WHITESPACE){
+            }elseif($token[0] == T_WHITESPACE || $this->isModifier($token)){
                 continue;
             }else{
                 return "";
@@ -159,7 +159,7 @@ class TokenIterator
             $token = $this->getRawTocken($id);
             if(!isset($token[0])){
                 return false;
-            }elseif(in_array($token[0],[T_DOC_COMMENT, T_COMMENT])){
+            }elseif(in_array($token[0],[T_DOC_COMMENT, T_COMMENT]) || $this->isModifier($token)){
                 continue;
             }elseif($token[0] == T_WHITESPACE){
                 if(substr_count($token[1], "\n") > 1){
@@ -170,6 +170,13 @@ class TokenIterator
                 return false;
             }
         }while(true);
+    }
+
+    public function isModifier($token){
+        return isset($token[0]) && in_array(
+            $token[0],
+            [T_PUBLIC, T_PROTECTED, T_PRIVATE, T_FINAL, T_ABSTRACT, T_VAR, T_STATIC]
+        );
     }
 
 }

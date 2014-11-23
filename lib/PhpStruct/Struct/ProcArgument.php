@@ -6,16 +6,21 @@
 
 namespace PhpStruct\Struct;
 
-class ProcArgument
+use PhpStruct\Base;
+
+class ProcArgument extends Base
 {
 
     private $name;
 
-    private $type;
+    /**
+     * @var string
+     */
+    private $type = "";
 
     private $default;
 
-    public function __construct($name, $type = null) {
+    public function __construct($name, $type = "") {
         $this->name = $name;
         $this->type = $type;
     }
@@ -28,7 +33,7 @@ class ProcArgument
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getType() {
         return $this->type;

@@ -215,13 +215,16 @@ class Expression
      */
     public function processBracesScope() {
 
+        $this->level++;
         if ($this->current()->getValue() == "{") {
+
             $this->logNext("brscope start");
             $scope = $this->process(false);
             $this->logNext("brscope end");
         } else {
             $scope = $this->process(true);
         }
+        $this->level--;
 
         return $scope;
     }
@@ -248,7 +251,7 @@ class Expression
             $this->log("process start");
             $expr = null;
 
-            $token = $this->current();
+            $start = $token = $this->current();
             switch ($this->current()->getType()) {
                 case T_IF :
                     $this->logNext("2if", 2);
@@ -287,6 +290,7 @@ class Expression
 
                     $this->logNext("class start");
                     $name = $this->current()->getValue();
+                    $this->log("name $name");
                     $expr = new AbstractDataType(strtolower($token->getValue()), $name);
                     $type = "";
                     do {
@@ -306,17 +310,17 @@ class Expression
                                 break;
                         }
                         $this->logNext("extends");
-                    } while ($this->current()->equal("{"));
 
+                    } while (!$this->current()->equal("{"));
 
                     $body = $this->processBracesScope();
-
-
 
                     foreach ($body->getScope() as $line) {
                         if ($line instanceof Procedure) {
                             $expr->addMethod($line);
                         } else {
+
+
 
                             if ($line instanceof Binary) {
                                 $var = $line->getFirstOperand();
@@ -327,13 +331,12 @@ class Expression
                             }
                             $field = new ClassField($var);
                             $field->copyModifiers($line);
+                            $field->setDefault($default);
+
+                            $expr->addField($field);
+
                         }
                     }
-
-
-                    print_r($expr);
-
-                    die();
 
                     break;
                 case T_FUNCTION:
@@ -351,7 +354,7 @@ class Expression
                             $this->logNext("func arg type");
                         }
 
-                        $name = $this->current()->getValue();
+                        $name = ltrim($this->current()->getValue(), "$");
                         $param = new ProcArgument($name, $type);
                         $expr->addArg($param);
                         $this->logNext("func arg value");
@@ -367,6 +370,7 @@ class Expression
                             if ($this->current()->getValue() == ",") {
                                 $this->logNext("func arg end");
                             }
+                        }elseif($this->current()->getValue() == ")"){
                         } else {
                             throw new FailException("func params parsing " . $this->current());
                         }
@@ -374,12 +378,11 @@ class Expression
 
                     $this->logNext("func args end");
 
-
-
-                    //$this->processModifiers($out, $start);
-                    $body = $this->processBracesScope();
-
-                    $expr->setBody($body);
+                    //
+                    if($this->current()->equal("{")) {
+                        $body = $this->processBracesScope();
+                        $expr->setBody($body);
+                    }
 
                     break;
 
@@ -394,11 +397,10 @@ class Expression
                     break;
 
                 default:
-                    $start = $this->current();
                     $expr = $this->processExpression();
-                    $this->processModifiers($expr, $start);
             }
             if ($expr) {
+                $this->processModifiers($expr, $start);
                 if ($token->hasBlankLine()) {
                     $expr->setHeadBlankLine();
                 }
@@ -408,6 +410,8 @@ class Expression
                 $this->log("process end");
             }
         }
+
+        //print_r($scope);
 
         return $scope;
     }
@@ -430,6 +434,10 @@ class Expression
      */
     public function processExpression(array $stopOn = []) {
         $this->level++;
+
+        if ($this->current()->equal("}")) {
+            die();
+        }
 
         $this->log("start expr");
 
