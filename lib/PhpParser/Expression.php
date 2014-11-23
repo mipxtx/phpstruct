@@ -401,17 +401,16 @@ class Expression
             }
             if ($expr) {
                 $this->processModifiers($expr, $start);
-                if ($token->hasBlankLine()) {
+
+                if ($start->hasBlankLine()) {
                     $expr->setHeadBlankLine();
                 }
 
-                $expr->setComment(trim($token->getComment()));
+                $expr->setComment(trim($start->getComment()));
                 $scope->addExpression($expr);
                 $this->log("process end");
             }
         }
-
-        //print_r($scope);
 
         return $scope;
     }

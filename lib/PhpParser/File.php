@@ -31,22 +31,12 @@ class File
         if (!$open->isTypeOf(T_OPEN_TAG)) {
             throw new FailException("start tag must be a first token, {$open} given in {$this->path}");
         }
-
         $this->next();
-
-
-
         $expressionProcessor = new Expression($this->getIterator());
-        //$definitionProcessor = new Definition($this->getIterator(), $expressionProcessor);
-
-
         if ($this->isEnabled()) {
             $expressionProcessor->enableDebug();
-            //$definitionProcessor->enableDebug();
+
         }
-
-
-
         while (!$this->end()) {
             $token = $this->current();
             if ($token->getType() == T_NAMESPACE) {
@@ -58,8 +48,6 @@ class File
                 $this->log("start expr");
                 $scope = $expressionProcessor->process();
 
-
-
                 foreach($scope->getScope() as $line){
                     if($line instanceof AbstractDataType){
                         $file->addCass($line);
@@ -69,31 +57,7 @@ class File
                         $file->addExpression($line);
                     }
                 }
-                /*
-                if ($scope instanceof Scope) {
-                    $file->mergeScope($scope);
-                } else {
-                    $file->addExpression($scope);
-                }*/
             }
-
-
-
-            /*elseif ($token->isDefinition()) {
-
-                $this->log("start def");
-                $file->addCass($definitionProcessor->process());
-                $this->log("after process class");
-            } else {
-                $this->log("start expr");
-                $scope = $expressionProcessor->process();
-                if ($scope instanceof Scope) {
-                    $file->mergeScope($scope);
-                } else {
-                    $file->addExpression($scope);
-                }
-            }*/
-
 
         }
 
