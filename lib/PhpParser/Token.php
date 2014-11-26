@@ -130,6 +130,8 @@ class Token
                 "/",
                 "%",
                 "=",
+                "&",
+                "|",
                 "->",
                 "::",
                 "=>",
@@ -142,9 +144,14 @@ class Token
                 ">",
                 "<",
                 "<=",
+                ">=",
                 "+=",
                 "-=",
                 ".=",
+                "|=",
+                "&=",
+                "<<",
+                ">>",
                 "^",
             ]
         );
@@ -153,7 +160,7 @@ class Token
     public function unarySuffix() {
         return in_array(
             $this->getValue(),
-            ["++", "--"]
+            ["++", "--",]
         );
     }
 
@@ -162,6 +169,8 @@ class Token
             strtolower($this->getValue()),
             [
                 "!",
+                "@",
+                "~",
                 "require",
                 "require_once",
                 "include",
@@ -173,6 +182,9 @@ class Token
                 "die",
                 "(int)",
                 "(float)",
+                "(bool)",
+                "(string)",
+                "(array)",
                 "public",
                 "protected",
                 "private",

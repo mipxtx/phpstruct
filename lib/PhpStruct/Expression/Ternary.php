@@ -9,7 +9,7 @@ namespace PhpStruct\Expression;
 
 use PhpStruct\Base;
 
-class Ternary extends Operator{
+class Ternary extends Operator implements MultiOperand{
 
     private $if;
 

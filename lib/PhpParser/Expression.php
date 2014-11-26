@@ -20,6 +20,7 @@ use PhpStruct\Expression\ForEachDef;
 use PhpStruct\Expression\FunctionCall;
 use PhpStruct\Expression\HasArgsInterface;
 use PhpStruct\Expression\IfExpr;
+use PhpStruct\Expression\MultiOperand;
 use PhpStruct\Expression\ObjectCreate;
 use PhpStruct\Expression\Operator;
 use PhpStruct\Expression\QuotedString;
@@ -103,6 +104,16 @@ class Expression
         $this->setIterator($iterator);
     }
 
+    public function processString($value){
+        if ($this->current()->getValue() == "(") {
+            $out = new FunctionCall($value);
+            $this->parseArgs($out);
+        } else {
+            $out = new DefineUsage($value);
+        }
+        return $out;
+    }
+
     /**
      * @return \PhpStruct\Base
      */
@@ -118,14 +129,23 @@ class Expression
             case T_STRING:
             case T_ISSET:
             case T_EMPTY:
-                if ($token->next()->getValue() == "(") {
-                    $out = new FunctionCall($token->getValue());
-                    $this->logNext("func call");
-                    $this->parseArgs($out);
-                } else {
-                    $out = new DefineUsage($token->getValue());
-                    $this->logNext("define");
-                }
+            case T_UNSET:
+            case T_METHOD_C:
+            case T_CLASS_C:
+            case T_FUNC_C:
+            case T_LIST:
+                $string =  $token->getValue();
+                $this->logNext("string");
+                $out = $this->processString($string);
+                break;
+            case T_NS_SEPARATOR :
+                $string = "";
+                do{
+                    $string .= $token->getValue();
+                    $this->logNext("ns_sep");
+                }while($this->current()->getType() == T_STRING || $this->current()->getType() == T_NS_SEPARATOR);
+                $this->logNext("NS sep");
+                $out = $this->processString($string);
                 break;
             case T_LNUMBER :
             case T_ENCAPSED_AND_WHITESPACE:
@@ -170,6 +190,7 @@ class Expression
                 $out = new CycleBreak($token->getValue());
                 $this->logNext("break out");
                 break;
+
             default:
                 $this->log("unknown token");
                 die();
@@ -255,10 +276,18 @@ class Expression
             switch ($this->current()->getType()) {
                 case T_IF :
                     $this->logNext("2if", 2);
-                    $body = $this->processExpression();
+                    $ifCond = $this->processExpression();
                     $this->logNext("if expr");
                     $then = $this->processBracesScope();
-                    $expr = new IfExpr($body, $then);
+                    $expr = new IfExpr($ifCond, $then);
+
+                    while($this->current()->getType() == T_ELSEIF){
+                        $this->logNext("2if", 2);
+                        $elseIfCond = $this->processExpression();
+                        $this->logNext("elseif");
+                        $expr->addElseIf($elseIfCond,$this->processBracesScope());
+                    }
+
                     if ($this->current()->getType() == T_ELSE) {
                         $this->logNext("else");
                         $expr->setElse($this->processBracesScope());
@@ -270,8 +299,8 @@ class Expression
                     $this->logNext("foreach as");
                     $iterator = $this->processExpression();
                     $this->logNext("foreach body");
-                    $body = $this->processBracesScope();
-                    $expr = new ForEachDef($item, $iterator, $body);
+                    $ifCond = $this->processBracesScope();
+                    $expr = new ForEachDef($item, $iterator, $ifCond);
                     break;
                 case T_FOR :
                     $this->logNext("2for", 2);
@@ -281,8 +310,8 @@ class Expression
                     $this->logNext("for count");
                     $count = $this->processExpression();
                     $this->logNext("for out");
-                    $body = $this->processBracesScope();
-                    $expr = new ForDef($def, $cond, $count, $body);
+                    $ifCond = $this->processBracesScope();
+                    $expr = new ForDef($def, $cond, $count, $ifCond);
                     break;
                 case T_CLASS :
                 case T_INTERFACE:
@@ -310,18 +339,12 @@ class Expression
                                 break;
                         }
                         $this->logNext("extends");
-
                     } while (!$this->current()->equal("{"));
-
-                    $body = $this->processBracesScope();
-
-                    foreach ($body->getScope() as $line) {
+                    $ifCond = $this->processBracesScope();
+                    foreach ($ifCond->getScope() as $line) {
                         if ($line instanceof Procedure) {
                             $expr->addMethod($line);
                         } else {
-
-
-
                             if ($line instanceof Binary) {
                                 $var = $line->getFirstOperand();
                                 $default = $line->getOperand();
@@ -332,9 +355,7 @@ class Expression
                             $field = new ClassField($var);
                             $field->copyModifiers($line);
                             $field->setDefault($default);
-
                             $expr->addField($field);
-
                         }
                     }
 
@@ -380,8 +401,8 @@ class Expression
 
                     //
                     if($this->current()->equal("{")) {
-                        $body = $this->processBracesScope();
-                        $expr->setBody($body);
+                        $ifCond = $this->processBracesScope();
+                        $expr->setBody($ifCond);
                     }
 
                     break;
@@ -417,6 +438,8 @@ class Expression
 
     public function processUnary(Token $token, $top) {
         $this->logNext("unary");
+
+
         list($current, $top) = $this->createOperator(
             $token->getValue(),
             function ($operator, $operand) {
@@ -465,8 +488,7 @@ class Expression
                 list($current, $top) = $this->processUnary($token, $top);
             } elseif ($token->isBinary()) {
 
-                $isUnary = !$top || ($current instanceof Binary && $current->getOperand() === null);
-
+                $isUnary = !$top || ($current instanceof MultiOperand && $current->getOperand() === null);
                 if ($isUnary) {
                     list($current, $top) = $this->processUnary($token, $top);
                 } else {
@@ -485,8 +507,10 @@ class Expression
                 $this->logNext("ternary 2");
                 list($current, $top) = $this->createOperator(
                     $token->getValue(),
-                    function ($operator, $operand) use ($then) {
-                        return new Ternary($operand, $then);
+                    function ($operator, $operand) use ($then, $token) {
+                        $res = new Ternary($operand, $then);
+                        $res->setInitTokenId($token);
+                        return $res;
                     },
                     $top
                 );
@@ -609,13 +633,16 @@ class Expression
     public function getContainer($operator, $top) {
         $iteration = $top;
 
+
+
         $prev = null;
         while ($iteration instanceof Operator) {
             if ($iteration->hasBrackets()) {
                 break;
             }
             $itOp = $iteration->getOperator();
-            if ($this->getPriority($operator) <= $this->getPriority($itOp)) {
+
+            if ($itOp && $this->getPriority($operator) <= $this->getPriority($itOp)) {
                 break;
             }
             $prev = $iteration;

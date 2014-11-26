@@ -14,8 +14,6 @@ class Processor
 
         $processor = $this->findProcessor($code);
         $out = "";
-
-
         $out .= $processor->process($code, $level);
         if ($code->hasBrackets()) {
             $out = "($out)";

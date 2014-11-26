@@ -17,9 +17,6 @@ class Procedure extends BaseDump
      */
     public function process($in, $level) {
 
-        print_r($in);
-
-
         $out = $this->processHead($in,$level) . $this->processModifiers($in) ."function " . $in->getName() . "(";
         $args = [];
         foreach ($in->getArgList() as $arg) {

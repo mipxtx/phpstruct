@@ -47,3 +47,8 @@ $a =[
 ];
 
 */
+
+
+//$res = $this->setType($anketaData['oid'], $value ? 22 : -22);
+
+$value ? 22 : -22;

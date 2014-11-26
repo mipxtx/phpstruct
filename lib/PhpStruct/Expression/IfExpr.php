@@ -17,14 +17,19 @@ class IfExpr extends Base implements HasScopes
     private $condition;
 
     /**
-     * @var
+     * @var Base
      */
     private $then;
 
     /**
-     * @var
+     * @var Base
      */
     private $else;
+
+    /**
+     * @var Base[]
+     */
+    private $elseif = [];
 
     function __construct(Base $condition, Base $body) {
         $this->condition = $condition;
@@ -45,5 +50,8 @@ class IfExpr extends Base implements HasScopes
 
     public function getElse() {
         return $this->else;
+    }
+    public function addElseIf(Base $elseif, Base $body){
+        $this->elseif[] = [$elseif, $body];
     }
 }

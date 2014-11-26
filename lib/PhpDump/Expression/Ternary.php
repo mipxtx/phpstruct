@@ -16,6 +16,11 @@ class Ternary extends BaseDump
      * @return string
      */
     public function process($in, $level) {
+        $op = $in->getOperand();
+        if(!$op){
+            print_r($in->getInitToken());
+            die();
+        }
         return $this->processExpression($in->getIf(), $level) . " ? "
         . $this->processExpression($in->getThen(), $level) . ": "
         . $this->processExpression($in->getOperand(), $level);

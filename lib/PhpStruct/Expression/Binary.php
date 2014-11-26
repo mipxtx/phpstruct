@@ -8,7 +8,7 @@ namespace PhpStruct\Expression;
 
 use PhpStruct\Base;
 
-class Binary extends Operator
+class Binary extends Operator implements MultiOperand
 {
 
     /**

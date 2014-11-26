@@ -6,6 +6,8 @@
 
 namespace PhpStruct;
 
+use PhpParser\Token;
+
 class Base
 {
 
@@ -24,8 +26,7 @@ class Base
 
     private $visibility = "";
 
-
-
+    private $initToken = null;
 
     public function hasScope() {
         return false;
@@ -134,4 +135,11 @@ class Base
         $this->headBlankLine = $from->hasHeadBlankLine();
     }
 
+    public function setInitTokenId(Token $token){
+        $this->initToken = $token->getId();
+    }
+
+    public function getInitToken(){
+        return $this->initToken;
+    }
 }
