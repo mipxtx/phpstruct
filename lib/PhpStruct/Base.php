@@ -41,10 +41,6 @@ class Base
         return false;
     }
 
-    public function setBrackets() {
-        $this->brackets = true;
-    }
-
     public function __call($name, $args){
         if($this->getModifiers()){
             $obj = $this->modifiers;
