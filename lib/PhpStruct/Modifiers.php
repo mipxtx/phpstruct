@@ -23,6 +23,10 @@ class Modifiers {
     private $visibility = "";
 
 
+    public function setBrackets() {
+        $this->brackets = true;
+    }
+
     public function hasBrackets() {
         return $this->brackets;
     }
@@ -76,7 +80,7 @@ class Modifiers {
     }
 
     /**
-     * @param boolean $final
+     *
      */
     public function setFinal() {
         $this->final = true;
@@ -90,7 +94,7 @@ class Modifiers {
     }
 
     /**
-     * @param boolean $static
+     *
      */
     public function setStatic() {
         $this->static = true;
