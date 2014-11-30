@@ -8,138 +8,120 @@ namespace PhpStruct;
 
 use PhpParser\Token;
 
+/**
+ * Class Base
+ *
+ * @method hasBrackets
+ * @method getComment
+ * @method setComment
+ * @method hasHeadBlankLine
+ * @method setHeadBlankLine
+ * @method isAbstract
+ * @method setAbstract
+ * @method isFinal
+ * @method setFinal
+ * @method isStatic
+ * @method setStatic
+ * @method getVisibility
+ * @method setVisibility
+ *
+ * @package PhpStruct
+ */
 class Base
 {
 
-    private $brackets = false;
+    /**
+     * @var Modifiers
+     */
+    private $modifiers = null;
 
-    private $headBlankLine;
-
-    private $comment = "";
-
-
-    private $static = false;
-
-    private $abstract = false;
-
-    private $final = false;
-
-    private $visibility = "";
-
-    private $initToken = null;
+    private $initTokenId = null;
 
     public function hasScope() {
         return false;
     }
 
-    public function brackets() {
+    public function setBrackets() {
         $this->brackets = true;
     }
 
-    public function hasBrackets() {
-        return $this->brackets;
+    public function __call($name, $args){
+        if($this->getModifiers()){
+            $obj = $this->modifiers;
+        }else{
+            if(strpos($name, "set") ===0 ){
+                $this->modifiers = new Modifiers();
+                $obj = $this->modifiers;
+            }else{
+                $obj = new Modifiers();
+            }
+        }
+        return call_user_func_array([$obj,$name],$args);
     }
 
     /**
-     * @return string
+     * @return Modifiers
      */
-    public function getComment() {
-        return $this->comment;
+    public function getModifiers(){
+        return $this->modifiers;
     }
 
-    /**
-     * @param string $comment
-     */
-    public function setComment($comment) {
-        $this->comment = $comment;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function hasHeadBlankLine() {
-        return $this->headBlankLine;
-    }
-
-    /**
-     *
-     */
-    public function setHeadBlankLine() {
-        $this->headBlankLine = true;
-    }
-
-
-    /**
-     * @return boolean
-     */
-    public function isAbstract() {
-        return $this->abstract;
-    }
-
-    /**
-     * @param boolean $abstract
-     */
-    public function setAbstract() {
-        $this->abstract = true;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isFinal() {
-        return $this->final;
-    }
-
-    /**
-     * @param boolean $final
-     */
-    public function setFinal() {
-        $this->final = true;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isStatic() {
-        return $this->static;
-    }
-
-    /**
-     * @param boolean $static
-     */
-    public function setStatic() {
-        $this->static = true;
-    }
-
-    /**
-     * @return string
-     */
-    public function getVisibility() {
-        return $this->visibility;
-    }
-
-    /**
-     * @param string $visibility
-     */
-    public function setVisibility($visibility) {
-        $this->visibility = $visibility;
+    public function setModifiers(Modifiers $mod){
+        $this->modifiers = $mod;
     }
 
     public function copyModifiers(Base $from){
-        $this->visibility = $from->getVisibility();
-        $this->abstract = $from->isAbstract();
-        $this->static = $from->isStatic();
-        $this->final = $from->isFinal();
-
-        $this->comment = $from->getComment();
-        $this->headBlankLine = $from->hasHeadBlankLine();
+        $this->modifiers = $from->getModifiers();
     }
 
-    public function setInitTokenId(Token $token){
-        $this->initToken = $token->getId();
+    public function setInitToken(Token $token){
+        $this->initTokenId = $token->getId();
+    }
+
+    public function setInitTokenId($token){
+        $this->initTokenId = $token;
     }
 
     public function getInitToken(){
-        return $this->initToken;
+        return $this->initTokenId;
+    }
+
+    public static function __set_state(array $data){
+
+        $fields = [];
+        foreach(static::getConstructorFields() as $name){
+            $fields[] = $data[$name];
+            unset($data[$name]);
+        }
+        $out = new static(...$fields);
+        foreach($data as $key => $value){
+
+            if($value === null){
+                continue;
+            }
+
+            if($value === false){
+                continue;
+            }
+
+            if(is_array($value)){
+                $methodName = "add" . rtrim(ucfirst($key), "s");
+                if(!method_exists($out, $methodName)){
+                    $methodName = rtrim($methodName, "e");
+                }
+                foreach($value as $item){
+                    $out->$methodName($item);
+                }
+            }else{
+                $methodName = "set" . ucfirst($key);
+                $out->$methodName($value);
+            }
+
+        }
+        return $out;
+    }
+
+    public static function getConstructorFields(){
+        return [];
     }
 }

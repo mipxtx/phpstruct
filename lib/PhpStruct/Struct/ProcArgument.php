@@ -20,6 +20,10 @@ class ProcArgument extends Base
 
     private $default;
 
+    public static function getConstructorFields(){
+        return ["name", "type"];
+    }
+
     public function __construct($name, $type = "") {
         $this->name = $name;
         $this->type = $type;

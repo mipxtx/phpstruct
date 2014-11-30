@@ -18,4 +18,8 @@ trait NamedTrait
     public function getName() {
         return $this->name;
     }
+
+    public static function getConstructorFields(){
+        return ["name"];
+    }
 } 

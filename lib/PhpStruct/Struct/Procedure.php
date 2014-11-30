@@ -19,7 +19,7 @@ class Procedure extends Base
     /**
      * @var ProcArgument[]
      */
-    private $argList = [];
+    private $args = [];
 
     /**
      * @var \PhpStruct\Base
@@ -30,8 +30,12 @@ class Procedure extends Base
         $this->name = $name;
     }
 
+    public static function getConstructorFields(){
+        return ["name"];
+    }
+
     public function addArg(ProcArgument $arg) {
-        $this->argList[] = $arg;
+        $this->args[] = $arg;
     }
 
     /**
@@ -45,7 +49,7 @@ class Procedure extends Base
      * @return ProcArgument[]
      */
     public function getArgList() {
-        return $this->argList;
+        return $this->args;
     }
 
     /**

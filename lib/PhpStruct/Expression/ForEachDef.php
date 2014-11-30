@@ -26,6 +26,10 @@ class ForEachDef extends Base implements HasScopes
      */
     private $body;
 
+    public static function getConstructorFields(){
+        return ["item", "each", "body"];
+    }
+
     public function __construct(Base $item, Base $each, Scope $body) {
         $this->item = $item;
         $this->each = $each;

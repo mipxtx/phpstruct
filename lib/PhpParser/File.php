@@ -50,7 +50,7 @@ class File
 
                 foreach($scope->getScope() as $line){
                     if($line instanceof AbstractDataType){
-                        $file->addCass($line);
+                        $file->addClass($line);
                     }elseif($line instanceof Procedure){
                         $file->addFunction($line);
                     }else{

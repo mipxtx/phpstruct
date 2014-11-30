@@ -15,8 +15,15 @@ class Ternary extends Operator implements MultiOperand{
 
     private $then;
 
-    private $else;
+    /**
+     * else
+     * @var
+     */
+    private $operand;
 
+    public static function getConstructorFields(){
+        return ["if", "then"];
+    }
 
     public function __construct(Base $if, Base $then = null){
         $this->if = $if;
@@ -24,14 +31,14 @@ class Ternary extends Operator implements MultiOperand{
     }
 
     public function setOperand(Base $operand) {
-        $this->else = $operand;
+        $this->operand = $operand;
     }
 
     /**
      * @return Base
      */
     public function getOperand() {
-        return $this->else;
+        return $this->operand;
     }
 
     /**

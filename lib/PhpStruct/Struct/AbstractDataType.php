@@ -33,6 +33,10 @@ class AbstractDataType extends Base
      */
     private $methods = [];
 
+    public static function getConstructorFields(){
+        return ["type", "name"];
+    }
+
     public function __construct($type, $name) {
         $this->type = $type;
         $this->name = $name;

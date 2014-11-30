@@ -14,17 +14,21 @@ class Unary extends Operator
     /**
      * @var Base
      */
-    private $expression;
+    private $operand;
+
+    public static function getConstructorFields(){
+        return ["operator"];
+    }
 
     function __construct($sign) {
         $this->setOperator($sign);
     }
 
     public function setOperand(Base $operand) {
-        $this->expression = $operand;
+        $this->operand = $operand;
     }
 
     public function getOperand() {
-        return $this->expression;
+        return $this->operand;
     }
 }

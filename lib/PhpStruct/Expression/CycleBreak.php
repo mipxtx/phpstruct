@@ -11,6 +11,10 @@ class CycleBreak extends \PhpStruct\Base{
      */
     private $type;
 
+    public static function getConstructorFields(){
+        return ["type"];
+    }
+
     function __construct($type) {
         $this->type = $type;
     }

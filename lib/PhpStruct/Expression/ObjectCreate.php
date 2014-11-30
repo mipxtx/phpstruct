@@ -14,6 +14,11 @@ class ObjectCreate extends Base implements HasArgsInterface
 
     private $name;
 
+
+    public static function getConstructorFields(){
+        return ["name"];
+    }
+
     function __construct($name) {
         $this->name = $name;
     }

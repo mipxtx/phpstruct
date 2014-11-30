@@ -19,7 +19,7 @@ class Binary extends Operator implements MultiOperand
     /**
      * @var Base
      */
-    private $operand2;
+    private $operand;
 
     /**
      * @param $operator
@@ -30,18 +30,22 @@ class Binary extends Operator implements MultiOperand
         $this->operand1 = $operand1;
     }
 
+    public static function getConstructorFields(){
+        return ["operator", "operand1"];
+    }
+
     /**
      * @param Base $operand
      */
     public function setOperand(Base $operand) {
-        $this->operand2 = $operand;
+        $this->operand = $operand;
     }
 
     /**
      * @return Base
      */
     public function getOperand() {
-        return $this->operand2;
+        return $this->operand;
     }
 
     public function getFirstOperand() {

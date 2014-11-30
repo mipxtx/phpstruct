@@ -16,7 +16,7 @@ Trait ArgsTrait
      */
     private $args = [];
 
-    public function addArgument(Base $argument) {
+    public function addArg(Base $argument) {
         $this->args[] = $argument;
 
         return $this;

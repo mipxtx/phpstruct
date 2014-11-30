@@ -27,7 +27,7 @@ class Unit extends PHPUnit_Framework_TestCase
     public function testTest($filename) {
         $f = new \PhpParser\FileLoader(__DIR__ . "/test/source/{$filename}");
         $expected = include __DIR__ . "/test/result/{$filename}";
-        $actual = $f->process()->getCode()->first();
+        $actual = $f->getTree()->getCode()->first();
         $this->assertEquals($expected, $actual);
     }
 }

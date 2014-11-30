@@ -15,32 +15,32 @@ class Scope extends Base
     /**
      * @var Base[]
      */
-    private $scope = [];
+    private $expressions = [];
 
     /**
      * @param Base $expr
      */
     public function addExpression(Base $expr) {
-        $this->scope[] = $expr;
+        $this->expressions[] = $expr;
     }
 
     public function mergeScope(Scope $scope) {
-        $this->scope = array_merge($this->scope, $scope->getScope());
+        $this->expressions = array_merge($this->expressions, $scope->getScope());
     }
 
     /**
      * @return Base
      */
     public function first() {
-        return $this->scope[0];
+        return $this->expressions[0];
     }
 
     public function count() {
-        return count($this->scope);
+        return count($this->expressions);
     }
 
     public function getScope() {
-        return $this->scope;
+        return $this->expressions;
     }
 
     public function getLevelShift($level) {

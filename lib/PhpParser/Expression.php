@@ -20,6 +20,7 @@ use PhpStruct\Expression\ForEachDef;
 use PhpStruct\Expression\FunctionCall;
 use PhpStruct\Expression\HasArgsInterface;
 use PhpStruct\Expression\IfExpr;
+use PhpStruct\Expression\IfSmall;
 use PhpStruct\Expression\MultiOperand;
 use PhpStruct\Expression\ObjectCreate;
 use PhpStruct\Expression\Operator;
@@ -222,7 +223,7 @@ class Expression
                 }
 
                 foreach (array_reverse($args) as $arg) {
-                    $object->addArgument($arg);
+                    $object->addArg($arg);
                 }
             }
         }
@@ -278,14 +279,15 @@ class Expression
                     $this->logNext("2if", 2);
                     $ifCond = $this->processExpression();
                     $this->logNext("if expr");
-                    $then = $this->processBracesScope();
-                    $expr = new IfExpr($ifCond, $then);
-
+                    $body = $this->processBracesScope();
+                    $if = new IfSmall($ifCond, $body);
+                    $expr = new IfExpr($if);
                     while($this->current()->getType() == T_ELSEIF){
                         $this->logNext("2if", 2);
                         $elseIfCond = $this->processExpression();
                         $this->logNext("elseif");
-                        $expr->addElseIf($elseIfCond,$this->processBracesScope());
+                        $elseif = new IfSmall($elseIfCond, $this->processBracesScope());
+                        $expr->addElseIf($elseif);
                     }
 
                     if ($this->current()->getType() == T_ELSE) {
@@ -427,7 +429,10 @@ class Expression
                     $expr->setHeadBlankLine();
                 }
 
-                $expr->setComment(trim($start->getComment()));
+                $comment = trim($start->getComment());
+                if($comment) {
+                    $expr->setComment($comment);
+                }
                 $scope->addExpression($expr);
                 $this->log("process end");
             }
@@ -509,7 +514,7 @@ class Expression
                     $token->getValue(),
                     function ($operator, $operand) use ($then, $token) {
                         $res = new Ternary($operand, $then);
-                        $res->setInitTokenId($token);
+                        $res->setInitToken($token);
                         return $res;
                     },
                     $top
@@ -517,7 +522,7 @@ class Expression
             } elseif ($token->equal("(")) {
                 $this->logNext("in (");
                 $expression = $this->processExpression();
-                $expression->brackets();
+                $expression->setBrackets();
                 $this->logNext("out (");
 
                 if ($current) {

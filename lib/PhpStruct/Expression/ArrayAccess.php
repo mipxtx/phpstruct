@@ -21,6 +21,10 @@ class ArrayAccess extends Base
      */
     private $access;
 
+    public static function getConstructorFields(){
+        return ["variable", "access"];
+    }
+
     public function __construct(Base $var, Base $access) {
         $this->variable = $var;
         $this->access = $access;

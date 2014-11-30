@@ -10,5 +10,5 @@ use PhpStruct\Base;
 
 interface HasArgsInterface
 {
-    public function addArgument(Base $argument);
+    public function addArg(Base $argument);
 }

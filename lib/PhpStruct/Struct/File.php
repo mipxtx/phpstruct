@@ -25,7 +25,7 @@ class File extends Base
     /**
      * @var array
      */
-    private $use = [];
+    private $uses = [];
 
     /**
      * @var Procedure[]
@@ -33,7 +33,7 @@ class File extends Base
     private $functions = [];
 
     /**
-     * @var ClassDef[]
+     * @var AbstractDataType[]
      */
     private $classes = [];
 
@@ -41,6 +41,11 @@ class File extends Base
      * @var Scope
      */
     private $code;
+
+
+    public static function getConstructorFields(){
+        return ["path"];
+    }
 
     public function __construct($name) {
         $this->path = $name;
@@ -55,14 +60,14 @@ class File extends Base
         $this->functions[] = $function;
     }
 
-    public function addCass(AbstractDataType $class) {
+    public function addClass(AbstractDataType $class) {
         $this->classes[] = $class;
     }
 
     public function addUse($full, $alias = null) {
         if ($alias === null) {
             $alias = array_pop(explode("\\", $full));
-            $this->use[$alias] = $full;
+            $this->uses[$alias] = $full;
         }
     }
 
@@ -87,6 +92,10 @@ class File extends Base
 
     public function getCode(){
         return $this->code;
+    }
+
+    public function setCode(Scope $scope){
+        $this->code = $scope;
     }
 
 }

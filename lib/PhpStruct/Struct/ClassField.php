@@ -16,6 +16,10 @@ class ClassField extends Base
 
     private $default;
 
+    public static function getConstructorFields(){
+        return ["var"];
+    }
+
     public function __construct(Variable $variable) {
         $this->var = $variable;
     }
