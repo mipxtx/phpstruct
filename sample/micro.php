@@ -26,19 +26,15 @@ if ($moderatorIds) {
 
 */
 //foreach ($res as $v) {
-    //$moderatorId = implode(",", $moderatorId) ?: 0;
+//$moderatorId = implode(",", $moderatorId) ?: 0;
 //}
-
 
 //echo '<style>a { text-decoration:none }</style>' . substr($getoids, -2, 2) . '-' . substr($getoids, 4, 2) . '-'
 //    . substr($getoids, 0, 4) . '<table border=1>';
 
-
-
 /*if(($part == 'anketa') && ($v['anketas'] > 0) || ($part == 'photo') && ($v['photos_moderated'] > 0)){
     $a =$b;
 }*/
-
 
 /*
 $a =[
@@ -48,7 +44,28 @@ $a =[
 
 */
 
-
 //$res = $this->setType($anketaData['oid'], $value ? 22 : -22);
 
-$value ? 22 : -22;
+//$value ? 22 : -22;
+
+//\Logger\LoggerLocator::get()->error('wrong anketa params', ['params' => $params]);
+/*if ($anketaIds) {
+    $counters = (new AdminComplaint)->getComplaintTotalCount($anketaIds);
+
+    foreach ($stat as &$row) {
+        $row['complaint_total_count'] = isset($counters[$row['anketa_id']]) ? $counters[$row['anketa_id']] : 0;
+    }
+}*/
+
+$b = 5;
+$c = 7;
+
+switch ($a + $b) {
+    case $a ? $a : $c :
+        return 1;
+    case "b" :
+        return 2;
+    default :
+        $a = $b;
+        return 3;
+}

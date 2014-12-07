@@ -20,4 +20,11 @@ class ArrayAppend extends Base
     public function getVariable() {
         return $this->variable;
     }
-} 
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [$this->variable];
+    }
+}

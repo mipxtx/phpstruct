@@ -45,4 +45,10 @@ class ClassField extends Base
         return $this->var;
     }
 
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [];
+    }
 }

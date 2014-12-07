@@ -22,4 +22,11 @@ class ScalarConst extends Base
 
         return $this;
     }
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [];
+    }
 }

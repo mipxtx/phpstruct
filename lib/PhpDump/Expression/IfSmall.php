@@ -18,6 +18,6 @@ class IfSmall extends BaseDump
     public function process($in, $level) {
         return
             "if (" . $this->processExpression($in->getCondition(), $level) . ")"
-            . $this->processExpression( $in->getBody(), $level);
+            . $this->processExpression($in->getBody(), $level);
     }
 }

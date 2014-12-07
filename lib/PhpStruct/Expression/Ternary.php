@@ -9,7 +9,8 @@ namespace PhpStruct\Expression;
 
 use PhpStruct\Base;
 
-class Ternary extends Operator implements MultiOperand{
+class Ternary extends Operator implements MultiOperand
+{
 
     private $if;
 
@@ -55,4 +56,10 @@ class Ternary extends Operator implements MultiOperand{
         return $this->then;
     }
 
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return[$this->if, $this->then, $this->operand];
+    }
 }

@@ -11,4 +11,11 @@ use PhpStruct\Base;
 class FunctionCall extends Base implements HasArgsInterface
 {
     use ArgsTrait, NamedTrait;
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return $this->getArgs();
+    }
 }

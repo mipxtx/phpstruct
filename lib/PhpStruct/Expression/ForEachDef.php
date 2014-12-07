@@ -56,4 +56,11 @@ class ForEachDef extends Base implements HasScopes
     public function getItem() {
         return $this->item;
     }
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [$this->item, $this->body];
+    }
 }

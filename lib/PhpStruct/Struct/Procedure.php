@@ -7,6 +7,7 @@
 namespace PhpStruct\Struct;
 
 use PhpStruct\Base;
+use PhpStruct\Expression\Scope;
 
 class Procedure extends Base
 {
@@ -22,7 +23,7 @@ class Procedure extends Base
     private $args = [];
 
     /**
-     * @var \PhpStruct\Base
+     * @var Scope
      */
     private $body;
 
@@ -53,7 +54,7 @@ class Procedure extends Base
     }
 
     /**
-     * @return Base
+     * @return Scope
      */
     public function getBody() {
         return $this->body;
@@ -62,7 +63,14 @@ class Procedure extends Base
     /**
      * @param Code
      */
-    public function setBody($body) {
+    public function setBody(Scope $body) {
         $this->body = $body;
+    }
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [$this->body];
     }
 }

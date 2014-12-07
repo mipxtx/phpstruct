@@ -1,10 +1,14 @@
 <?php
 namespace PhpStruct\Expression;
+
+use PhpStruct\Base;
+
 /**
  * @author: mix
  * @date: 15.11.14
  */
-class CycleBreak extends \PhpStruct\Base{
+class CycleBreak extends \PhpStruct\Base
+{
 
     /**
      * @var string
@@ -26,4 +30,10 @@ class CycleBreak extends \PhpStruct\Base{
         return $this->type;
     }
 
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [];
+    }
 }

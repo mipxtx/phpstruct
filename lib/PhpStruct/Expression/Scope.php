@@ -51,4 +51,11 @@ class Scope extends Base
 
         return $level . $out;
     }
-} 
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return $this->expressions;
+    }
+}

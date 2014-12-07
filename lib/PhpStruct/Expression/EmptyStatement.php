@@ -9,6 +9,12 @@ namespace PhpStruct\Expression;
 
 use PhpStruct\Base;
 
-class EmptyStatement extends Base{
-
-} 
+class EmptyStatement extends Base
+{
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [];
+    }
+}

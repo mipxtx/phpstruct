@@ -56,4 +56,11 @@ class ProcArgument extends Base
     public function setDefault($default) {
         $this->default = $default;
     }
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [];
+    }
 }

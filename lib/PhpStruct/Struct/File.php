@@ -98,4 +98,10 @@ class File extends Base
         $this->code = $scope;
     }
 
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return array_merge($this->classes, $this->functions, [$this->code]);
+    }
 }

@@ -9,42 +9,48 @@ namespace PhpParser;
 class FileLoader
 {
 
-
     private $fileName = "";
+
     /**
      * @var File
      */
     private $fileProcessor;
 
-
     private $cacheDir = "";
 
-    public function getFulPath($filename){
+    private $disableCache = false;
+
+    public function getFulPath($filename) {
         if ($filename[0] == "~") {
             $filename = $_ENV["HOME"] . ltrim($filename, "~");
         }
+
         return $filename;
     }
 
-
-    public function __construct($filename, $cacheDir = "~/.phpstruct/") {
+    public function __construct($filename, $cacheDir = __DIR__ . "/../../cache/") {
         $this->fileName = $this->getFulPath($filename);
-        $this->cacheDir = $this->getFulPath($cacheDir);
-
-
+        $this->cacheDir = realpath($this->getFulPath($cacheDir)) . "/files/";
+        $this->mkdir($this->cacheDir);
     }
 
-    public function getProcessor(){
-        if(!$this->fileProcessor){
+    public function mkdir($dir) {
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+    }
+
+    public function getProcessor() {
+        if (!$this->fileProcessor) {
             $iterator = new TokenIterator(token_get_all(file_get_contents($this->fileName)));
             $this->fileProcessor = new File($this->fileName, $iterator);
         }
+
         return $this->fileProcessor;
     }
 
-
-    public function getCachePath(){
-        return $this->cacheDir . str_replace(["\\", "/"], "_",  $this->fileName);
+    public function getCachePath() {
+        return $this->cacheDir . str_replace(["\\", "/"], "_", $this->fileName);
     }
 
     /**
@@ -52,15 +58,24 @@ class FileLoader
      * @throws FailException
      */
     public function getTree() {
-        if(file_exists($this->getCachePath())){
+        if (
+            !$this->disableCache
+            && file_exists($this->getCachePath())
+            && filemtime($this->getCachePath()) > filemtime($this->fileName)
+        ) {
             return require $this->getCachePath();
         }
         $out = $this->getProcessor()->process();
-        file_put_contents($this->getCachePath(), "<?php\nreturn " . var_export($out,1) . ";");
+        file_put_contents($this->getCachePath(), "<?php\nreturn " . var_export($out, 1) . ";");
+
         return $out;
     }
 
     public function enableDebug() {
         $this->getProcessor()->enableDebug();
+    }
+
+    public function disableCache() {
+        $this->disableCache = true;
     }
 } 

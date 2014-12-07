@@ -29,4 +29,10 @@ class ObjectCreate extends Base implements HasArgsInterface
         return $this->name;
     }
 
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return $this->getArgs();
+    }
 }

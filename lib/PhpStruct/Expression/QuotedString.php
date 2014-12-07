@@ -9,10 +9,9 @@ namespace PhpStruct\Expression;
 
 use PhpStruct\Base;
 
-class QuotedString extends Base{
-
+class QuotedString extends Base
+{
     private $elements = [];
-
 
     public function addElement($element){
         $this->elements[] = $element;
@@ -22,4 +21,10 @@ class QuotedString extends Base{
         return $this->elements;
     }
 
-} 
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [];
+    }
+}

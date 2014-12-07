@@ -16,22 +16,25 @@ class Scope extends BaseDump
      * @param int $level
      * @return string
      */
-    public function process($in, $level) {
+    public function process($in, $level, $params = []) {
         $out = "";
-        if ($level >= 0) {
+        $noBrace = isset($params["noBrace"]);
+        if ($level >= 0 && !$noBrace) {
             $out = " {\n";
         }
-
+        $lines = [];
         foreach ($in->getScope() as $line) {
-            $out .= $this->getLevelShift($level + 1) . $this->processExpression($line, $level + 1);
-            if (!($line instanceof HasScopes)) {
-                $out .= ";";
-            }
-            $out .= "\n";
-        }
 
-        if ($level >= 0) {
-            $out .= $this->getLevelShift($level) . "}";
+            $codeLine = $this->getLevelShift($level + 1) . $this->processExpression($line, $level + 1);
+            if (!($line instanceof HasScopes)) {
+                $codeLine .= ";";
+            }
+            $lines[] = $codeLine;
+        }
+        $out .= implode("\n", $lines);
+
+        if ($level >= 0 && !$noBrace) {
+            $out .= "\n".$this->getLevelShift($level) . "}";
         }
 
         return $out;

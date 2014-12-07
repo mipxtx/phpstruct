@@ -37,4 +37,11 @@ class ArrayAccess extends Base
     public function getAccess() {
         return $this->access;
     }
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [$this->variable, $this->access];
+    }
 }

@@ -153,6 +153,7 @@ class Token
                 "<<",
                 ">>",
                 "^",
+                "as",
             ]
         );
     }
@@ -191,6 +192,7 @@ class Token
                 "abstract",
                 "final",
                 "static",
+                "&",
             ]
         );
     }

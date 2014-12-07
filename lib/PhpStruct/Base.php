@@ -12,6 +12,7 @@ use PhpParser\Token;
  * Class Base
  *
  * @method hasBrackets
+ * @method setBrackets
  * @method getComment
  * @method setComment
  * @method hasHeadBlankLine
@@ -24,10 +25,12 @@ use PhpParser\Token;
  * @method setStatic
  * @method getVisibility
  * @method setVisibility
+ * @method isConst
+ * @method setConst
  *
  * @package PhpStruct
  */
-class Base
+abstract class Base
 {
 
     /**
@@ -120,4 +123,9 @@ class Base
     public static function getConstructorFields(){
         return [];
     }
+
+    /**
+     * @return Base[]
+     */
+    abstract public function getChildren();
 }

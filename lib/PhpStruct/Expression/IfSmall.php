@@ -9,7 +9,8 @@ namespace PhpStruct\Expression;
 
 use PhpStruct\Base;
 
-class IfSmall extends Base{
+class IfSmall extends Base
+{
 
     private $condition;
 
@@ -38,5 +39,10 @@ class IfSmall extends Base{
         return $this->condition;
     }
 
-
-} 
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [$this->condition, $this->body];
+    }
+}

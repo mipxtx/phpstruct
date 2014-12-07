@@ -99,4 +99,11 @@ class AbstractDataType extends Base
     public function getMethods() {
         return $this->methods;
     }
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return $this->methods;
+    }
 }

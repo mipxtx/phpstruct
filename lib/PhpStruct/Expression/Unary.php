@@ -31,4 +31,11 @@ class Unary extends Operator
     public function getOperand() {
         return $this->operand;
     }
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [$this->operand];
+    }
 }

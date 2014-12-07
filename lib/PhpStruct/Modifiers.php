@@ -8,6 +8,7 @@ namespace PhpStruct;
 
 
 class Modifiers {
+
     private $brackets = false;
 
     private $headBlankLine = false;
@@ -21,6 +22,8 @@ class Modifiers {
     private $final = false;
 
     private $visibility = "";
+
+    private $const = false;
 
 
     public function setBrackets() {
@@ -106,6 +109,21 @@ class Modifiers {
     public function getVisibility() {
         return $this->visibility;
     }
+
+    /**
+     * @return boolean
+     */
+    public function isConst() {
+        return $this->const;
+    }
+
+    /**
+     * @param boolean $const
+     */
+    public function setConst() {
+        $this->const = true;
+    }
+
 
     /**
      * @param string $visibility

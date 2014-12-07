@@ -17,11 +17,9 @@ class IfExpr extends BaseDump
      */
     public function process($in, $level) {
 
+        $out = $this->processExpression($in->getIf(), $level);
 
-        $out = $this->processExpression($in->getIf(),$level);
-
-
-        foreach($in->getElseIfs() as $elseIf){
+        foreach ($in->getElseIfs() as $elseIf) {
             $out .= " else" . $this->processExpression($elseIf, $level);
         }
 

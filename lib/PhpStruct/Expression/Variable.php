@@ -11,4 +11,11 @@ use PhpStruct\Base;
 class Variable extends Base
 {
     use NamedTrait;
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        return [];
+    }
 }

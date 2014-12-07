@@ -2,14 +2,15 @@
 ini_set("display_errors", "On");
 require __DIR__ . "/init-dev.php";
 
-//$path = "/Users/mix/wsp/mamba/.packages/Anketa/Anketa.inc";
+//$path = "/Users/mix/wsp/mamba/.packages/AdminAnketa/AdminAnketa.inc";
 //$path = __DIR__ . "/sample/mess.php";
 //$path = __DIR__ . "/sample/class.php";
-//$path  = __DIR__ . "/sample/micro.php";
-$path  = __DIR__ . "/sample/if.php";
+$path  = __DIR__ . "/sample/micro.php";
+//$path  = __DIR__ . "/sample/if.php";
 
 $f = new \PhpParser\FileLoader($path);
 $f->enableDebug();
+$f->disableCache();
 $code = $f->getTree();
 
 echo get_class($code) . "\n";

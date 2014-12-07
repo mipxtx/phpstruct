@@ -49,6 +49,16 @@ trait SupportTrait
         return $this->iterator->end();
     }
 
+    public function getLogInfo(){
+        $token = $this->current();
+
+        $next = $token->next();
+        $next2 = $token->next(2);
+
+        return " $token | $next | $next2";
+
+    }
+
     public function log($message, $skipTokens = false) {
         if (!$this->debug) {
             return;
@@ -57,12 +67,7 @@ trait SupportTrait
         echo "$message:";
 
         if (!$skipTokens) {
-            $token = $this->current();
-
-            $next = $token->next();
-            $next2 = $token->next(2);
-
-            echo " $token | $next | $next2";
+            echo $this->getLogInfo();
         }
         echo "\n";
     }

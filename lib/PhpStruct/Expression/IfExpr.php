@@ -56,4 +56,16 @@ class IfExpr extends Base implements HasScopes
     public function getElseIfs(){
         return $this->elseIfs;
     }
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        $m = [$this->if];
+        if($this->else){
+            $m[] = $this->else;
+        }
+
+        return array_merge($m, $this->elseIfs);
+    }
 }

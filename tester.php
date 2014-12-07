@@ -6,14 +6,19 @@
 ini_set("display_errors", "On");
 require __DIR__ . "/init-dev.php";
 
-$path = "/Users/mix/wsp/mamba/.packages/Anketa/Anketa.inc";
+//$path = "/Users/mix/wsp/mamba/.packages/Anketa/Anketa.inc";
 //$path = __DIR__ . "/sample/if.php";
-$f = new \PhpParser\FileLoader($path, __DIR__ ."/cache/");
+//$path = __DIR__ . "/sample/method.php";
+//$f = new \PhpParser\FileLoader($path, __DIR__ . "/cache/");
+//$f->disableCache();
+//$f->enableDebug();
+//$out = $f->getTree()->getClasses();
 
+//print_R($out);
 
-$out = $f->getTree();
+//$tester = new \PhpAnalyzer\Tester($out[0]);
+//$tester->createTests();
 
-/*
-$tester = new \PhpAnalyzer\Tester($f->getTree()->getClasses()[0]);
-$tester->createTests();
-*/
+$indexer = new \PhpAnalyzer\Indexer(__DIR__ . "/cache/");
+$indexer->addRoot("/Users/mix/wsp/mamba/.packages");
+$indexer->create();

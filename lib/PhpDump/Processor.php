@@ -10,11 +10,12 @@ use PhpStruct\Base;
 
 class Processor
 {
-    public function process(Base $code, $level) {
+    public function process(Base $code, $level, $params = []) {
+
 
         $processor = $this->findProcessor($code);
         $out = "";
-        $out .= $processor->process($code, $level);
+        $out .= $processor->process($code, $level, $params);
         if ($code->hasBrackets()) {
             $out = "($out)";
         }
@@ -53,6 +54,4 @@ class Processor
         }
         throw new FailException("cant create " . $name);
     }
-
-
 }
