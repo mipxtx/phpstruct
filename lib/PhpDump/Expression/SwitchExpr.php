@@ -22,8 +22,12 @@ class SwitchExpr extends BaseDump
             $out .= $this->getLevelShift($level + 1)
                 . $this->processExpression($case, $level + 1) . "\n";
         }
-        $out .= $this->getLevelShift($level + 1)
-            . $this->processExpression($in->getDefault(), $level + 1) . "\n";
+
+        $default =  $in->getDefault();
+        if($default) {
+            $out .= $this->getLevelShift($level + 1)
+                . $this->processExpression($in->getDefault(), $level + 1) . "\n";
+        }
         $out .= $this->getLevelShift($level) . "}";
 
         return $out;

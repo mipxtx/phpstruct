@@ -13,6 +13,11 @@ abstract class BaseDump
 {
     protected $in;
 
+    /**
+     * @param $in
+     * @param int $level
+     * @return string
+     */
     public abstract function process($in, $level);
 
     /**
@@ -43,6 +48,7 @@ abstract class BaseDump
         $out .= $code->getVisibility() ? $code->getVisibility() . " " : "";
         $out .= $code->isStatic() ? "static " : "";
         $out .= $code->isFinal() ? "final " : "";
+        $out .= $code->isConst() ? "const " : "";
 
         return $out;
     }

@@ -1,52 +1,55 @@
 <?php
-
 /**
- * Class A
+ *
+ * Название класса: AdminAnketa
+ * -----------------------------
+ * Модерация анкет и фоток
+ *
+ * @package     Mediahosting
+ * @author      joshua5
+ * @di admin_anketa.moderation_facade
  */
-abstract class A extends O implements BB, CC
+class AdminAnketa
 {
+    use Events_Trait;
+
+    use Db_ConnectionFabricTrait;
+
+    // для анкет obj = Anketa
+    /**
+     * @var Anketa
+     */
+    var $obj;
+
+    const BAN_FROM_FLASH_MODER_TPL = 14;
+    const BAN_FROM_ANKETA_TEXT_TPL = 17;
 
     /**
-     * @var null
+     * Банит анкету
+     *
+     * @param int $anketaId Идентификатор анкеты
+     * @param int $moderatorId Идентификатор модератора
+     * @param AdminAnketaRejectReason $rejectReason Причина бана
+     * @return bool
      */
-    private static $a = null;
+    public function rejectAnketa($anketaId, $moderatorId, AdminAnketaRejectReason $rejectReason) {
 
-    /**
-     * @return mixed
-     */
-    abstract function aaa();
 
-    /**
-     * @param $b
-     * @return int
-     */
-    public function bbb($b) {
-        return $b ^ 2;
+        switch ($rejectReason->getReason()) {
+
+            case 'informer_spam': // рассылка рекламы и спама
+            case 'informer_menace': // пользователь рассылает угрозы и оскорбления
+
+                break;
+
+
+        }
+
+
+
+        return true;
     }
 
-    /**
-     * @param O $a
-     * @param int $b
-     * @return int
-     */
-    public static function ccc(O $a = null, $b=3) {
-        return $a + $b + self::$a;
-    }
-}
 
-interface BB
-{
-    public function bbb($b);
-}
 
-interface CC
-{
-    public static function ccc(O $a = null, $b = 3);
-}
-
-/**
- * Class O
- */
-class O {
-    public function oo(){}
 }

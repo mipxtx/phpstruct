@@ -7,6 +7,8 @@
 namespace PhpStruct\Struct;
 
 use PhpStruct\Base;
+use PhpStruct\Expression\DefineUsage;
+use PhpStruct\Expression\UseLine;
 
 class AbstractDataType extends Base
 {
@@ -32,6 +34,16 @@ class AbstractDataType extends Base
      * @var Procedure[]
      */
     private $methods = [];
+
+    /**
+     * @var UseLine[]
+     */
+    private $uses = [];
+
+    /**
+     * @var DefineUsage
+     */
+    private $constants = [];
 
     public static function getConstructorFields(){
         return ["type", "name"];
@@ -98,6 +110,35 @@ class AbstractDataType extends Base
 
     public function getMethods() {
         return $this->methods;
+    }
+
+    /**
+     * @return \PhpStruct\Expression\UseLine[]
+     */
+    public function getUses() {
+        return $this->uses;
+    }
+
+    /**
+     * @param \PhpStruct\Expression\UseLine $use
+     */
+    public function addUse($use) {
+        $this->uses[] = $use;
+    }
+
+
+    /**
+     * @return DefineUsage
+     */
+    public function getConstants() {
+        return $this->constants;
+    }
+
+    /**
+     * @param DefineUsage $constant
+     */
+    public function addConstant($constant) {
+        $this->constants[] = $constant;
     }
 
     /**

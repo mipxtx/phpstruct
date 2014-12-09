@@ -7,8 +7,9 @@
 namespace PhpStruct\Expression;
 
 use PhpStruct\Base;
+use PhpStruct\HasNameInterface;
 
-class DefineUsage extends Base
+class DefineUsage extends Base implements HasNameInterface
 {
     use NamedTrait;
 

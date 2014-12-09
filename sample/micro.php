@@ -57,15 +57,27 @@ $a =[
     }
 }*/
 
-$b = 5;
-$c = 7;
+/*function a($a) {
+    $b = 5;
+    $c = 7;
 
-switch ($a + $b) {
-    case $a ? $a : $c :
-        return 1;
-    case "b" :
-        return 2;
-    default :
-        $a = $b;
-        return 3;
+
+    switch ($a + $b) {
+        case 0:
+        case $a ? $a : $c :
+            return 1;
+        case "b" :
+            return 2;
+        default :
+            $a = $b;
+
+            return 3;
+    }
+}
+*/
+
+try{
+    $a  =+ $b;
+}catch(\PhpDump\FailException $e){
+
 }

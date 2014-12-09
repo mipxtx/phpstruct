@@ -154,6 +154,7 @@ class Token
                 ">>",
                 "^",
                 "as",
+                "instanceof"
             ]
         );
     }
@@ -182,6 +183,7 @@ class Token
                 "exit",
                 "die",
                 "(int)",
+                "(integer)",
                 "(float)",
                 "(bool)",
                 "(string)",

@@ -7,9 +7,13 @@
 namespace PhpParser;
 
 use PhpStruct\Code;
+use PhpStruct\Expression\ArgsDefineInterface;
 use PhpStruct\Expression\CaseDef;
+use PhpStruct\Expression\CatchDef;
 use PhpStruct\Expression\DefaultCase;
+use PhpStruct\Expression\DoDef;
 use PhpStruct\Expression\SwitchExpr;
+use PhpStruct\Expression\TryDef;
 use PhpStruct\FailException;
 use PhpStruct\Expression\ArrayAccess;
 use PhpStruct\Expression\ArrayAppend;
@@ -36,6 +40,7 @@ use PhpStruct\Expression\Unary;
 use PhpStruct\Expression\UnarySuffix;
 use PhpStruct\Expression\UseLine;
 use PhpStruct\Expression\Variable;
+use PhpStruct\HasNameInterface;
 use PhpStruct\Struct\AbstractDataType;
 use PhpStruct\Struct\ClassField;
 use PhpStruct\Struct\ProcArgument;
@@ -57,7 +62,7 @@ class Expression
         ["clone"],
         ["["],
         ["&"],
-        ["++", "--", "~", "(int)", "(float)", "(string)", "(array)", "(object)", "(bool)", "@"],
+        ["++", "--", "~", "(int)", "(integer)", "(float)", "(string)", "(array)", "(object)", "(bool)", "@"],
         ["instanceof"],
         ["!"],
         ["*", "/", "%"],
@@ -174,7 +179,7 @@ class Expression
             case T_NEW:
                 $out = new ObjectCreate($token->next()->getValue());
                 $this->logNext("var 2obj", 2);
-                if($this->current()->getValue() == "(") {
+                if ($this->current()->getValue() == "(") {
                     $this->parseArgs($out);
                 }
                 break;
@@ -263,11 +268,255 @@ class Expression
         return $scope;
     }
 
-
-    public function processStop(){
+    public function processStop() {
         return $this->current()->getValue() == "}"
-            || $this->current()->getType() == T_CASE
-            || $this->current()->getType() == T_DEFAULT;
+        || $this->current()->getType() == T_CASE
+        || $this->current()->getType() == T_DEFAULT;
+    }
+
+    public function getFuncArgs() {
+    }
+
+    public function processIf() {
+        $this->logNext("2if", 2);
+        $ifCond = $this->processExpression();
+        $this->logNext("if expr");
+        $body = $this->processBracesScope();
+        $if = new IfSmall($ifCond, $body);
+        $expr = new IfExpr($if);
+        while ($this->current()->getType() == T_ELSEIF) {
+            $this->logNext("2if", 2);
+            $elseIfCond = $this->processExpression();
+            $this->logNext("elseif");
+            $elseif = new IfSmall($elseIfCond, $this->processBracesScope());
+            $expr->addElseIf($elseif);
+        }
+
+        if ($this->current()->getType() == T_ELSE) {
+            $this->logNext("else");
+            $expr->setElse($this->processBracesScope());
+        }
+
+        return $expr;
+    }
+
+    public function processForeach() {
+        $this->logNext("2foreach", 2);
+        $item = $this->processExpression();
+        $this->logNext("foreach as");
+        $iterator = $this->processExpression();
+        $this->logNext("foreach body");
+        $ifCond = $this->processBracesScope();
+
+        return new ForEachDef($item, $iterator, $ifCond);
+    }
+
+    public function processFor() {
+        $this->logNext("2for", 2);
+        $def = $this->processExpression();
+        $this->logNext("for cond");
+        $cond = $this->processExpression();
+        $this->logNext("for count");
+        $count = $this->processExpression();
+        $this->logNext("for out");
+        $ifCond = $this->processBracesScope();
+
+        return new ForDef($def, $cond, $count, $ifCond);
+    }
+
+    public function processClass() {
+        $token = $this->current();
+        $this->logNext("class start");
+        $name = $this->current()->getValue();
+        $this->log("name $name");
+        $expr = new AbstractDataType(strtolower($token->getValue()), $name);
+        $type = "";
+        do {
+            switch (strtolower($this->current()->getValue())) {
+                case "extends" :
+                case "implements":
+                    $type = strtolower($this->current()->getType());
+                    break;
+                case "," :
+                    break;
+                default :
+                    if ($type == "extends") {
+                        $expr->addExtends($this->current()->getValue());
+                    } elseif ($type == "implements") {
+                        $expr->addImplements($this->current()->getValue());
+                    }
+                    break;
+            }
+            $this->logNext("extends");
+        } while (!$this->current()->equal("{"));
+        $ifCond = $this->processBracesScope();
+
+        //print_r($ifCond);
+
+        foreach ($ifCond->getScope() as $line) {
+            if ($line instanceof Procedure) {
+                $expr->addMethod($line);
+            } elseif ($line instanceof UseLine) {
+                $expr->addUse($line);
+            } else {
+                if ($line instanceof Binary) {
+                    $var = $line->getFirstOperand();
+                    $default = $line->getOperand();
+                } else {
+                    $var = $line;
+                    $default = null;
+                }
+
+                if ($var instanceof HasNameInterface) {
+                    $field = new ClassField($var->getName());
+                    $field->copyModifiers($line);
+                    $field->setDefault($default);
+                    $expr->addField($field);
+                } else {
+                    throw new FailException("unknown field class " . get_class($var));
+                }
+            }
+        }
+
+        return $expr;
+    }
+
+    public function getProcParam() {
+        $type = null;
+        if ($this->current()->getType() != T_VARIABLE) {
+            $type = $this->current()->getValue();
+            $this->logNext("func arg type");
+        }
+
+        $name = ltrim($this->current()->getValue(), "$");
+        $param = new ProcArgument($name, $type);
+
+        $this->logNext("func arg value");
+
+        if ($this->current()->getValue() == ",") {
+            $this->logNext("func arg plain");
+        } elseif ($this->current()->getValue() == "=") {
+
+            $this->logNext("func arg def");
+
+            $param->setDefault($this->processExpression([","]));
+
+            if ($this->current()->getValue() == ",") {
+                $this->logNext("func arg end");
+            }
+        } elseif ($this->current()->getValue() == ")") {
+        } else {
+            throw new FailException("func params parsing " . $this->current());
+        }
+
+        return $param;
+    }
+
+    public function processFunction() {
+        $this->logNext("func");
+        $name = $this->current()->getValue();
+        $expr = new Procedure($name);
+        $this->logNext("func name");
+
+        $this->logNext("func args");
+
+        while ($this->current()->getValue() != ")") {
+            $expr->addArg($this->getProcParam());
+        };
+
+        $this->logNext("func args end");
+        //
+        if ($this->current()->equal("{")) {
+            $ifCond = $this->processBracesScope();
+            $expr->setBody($ifCond);
+        }
+
+        return $expr;
+    }
+
+    public function processUse() {
+        $this->logNext("use");
+        $val = $this->processToken();
+        $expr = new UseLine($val);
+
+        if ($this->current()->isTypeOf(T_AS)) {
+            $this->logNext("use as");
+            $expr->setAs($this->processToken());
+            $this->logNext("use as2");
+        }
+        if ($this->current()->equal("{")) {
+            $ee = $this->processBracesScope();
+            $expr->setMapping($ee);
+        } else {
+            $this->logNext("use out");
+        }
+
+        return $expr;
+    }
+
+    public function processSwitch() {
+        $this->logNext("switch2", 2);
+        $switchCond = $this->processExpression();
+        $this->logNext("switch out");
+        $expr = new SwitchExpr($switchCond);
+        $this->logNext("switch body");
+
+        while (!$this->current()->equal("}")) {
+            switch ($this->current()->getType()) {
+                case T_CASE :
+                    $this->logNext("case");
+                    $cond = $this->processExpression([":"]);
+                    $this->logNext("case body");
+                    $body = $this->process();
+                    $case = new CaseDef($body, $cond);
+                    $expr->addCase($case);
+                    break;
+                case T_DEFAULT :
+                    $this->logNext("default2", 2);
+                    $body = $this->process();
+                    $def = new DefaultCase($body);
+                    $expr->setDefault($def);
+                    break;
+                default:
+                    throw new FailException("unknown token");
+            }
+        }
+        $this->logNext("switch out");
+
+        return $expr;
+    }
+
+    public function processTry() {
+        $this->logNext("try");
+        $body = $this->processBracesScope();
+        $expr = new TryDef($body);
+        while ($this->current()->getType() == T_CATCH) {
+            $this->logNext("2catch", 2);
+            $arg = $this->getProcParam();
+            $this->logNext("catch param out");
+            $body = $this->processBracesScope();
+            $catch = new CatchDef($arg, $body);
+            $expr->addCatch($catch);
+        }
+
+        return $expr;
+    }
+
+    public function processDo() {
+        $this->logNext("do");
+        $body = $this->processBracesScope();
+        if ($this->current()->getType() == T_WHILE) {
+            $type = "while";
+        } else {
+            $type = "until";
+        }
+
+        $this->logNext("do cond");
+        $this->logNext("do (");
+        $cond = $this->processExpression();
+        $this->logNext("do )");
+
+        return new DoDef($body, $cond, $type);
     }
 
     /**
@@ -292,215 +541,60 @@ class Expression
             $this->log("process start");
             $expr = null;
 
+            if (in_array(
+                $this->current()->getType(),
+                [T_VAR, T_PUBLIC, T_PROTECTED, T_PRIVATE, T_STATIC, T_FINAL, T_ABSTRACT, T_CONST]
+            )) {
+                $this->next();
+                continue;
+            }
+
             $start = $token = $this->current();
             switch ($this->current()->getType()) {
                 case T_IF :
-                    $this->logNext("2if", 2);
-                    $ifCond = $this->processExpression();
-                    $this->logNext("if expr");
-                    $body = $this->processBracesScope();
-                    $if = new IfSmall($ifCond, $body);
-                    $expr = new IfExpr($if);
-                    while ($this->current()->getType() == T_ELSEIF) {
-                        $this->logNext("2if", 2);
-                        $elseIfCond = $this->processExpression();
-                        $this->logNext("elseif");
-                        $elseif = new IfSmall($elseIfCond, $this->processBracesScope());
-                        $expr->addElseIf($elseif);
-                    }
-
-                    if ($this->current()->getType() == T_ELSE) {
-                        $this->logNext("else");
-                        $expr->setElse($this->processBracesScope());
-                    }
+                    $expr = $this->processIf();
                     break;
                 case T_FOREACH :
-                    $this->logNext("2foreach", 2);
-                    $item = $this->processExpression();
-                    $this->logNext("foreach as");
-                    $iterator = $this->processExpression();
-                    $this->logNext("foreach body");
-                    $ifCond = $this->processBracesScope();
-                    $expr = new ForEachDef($item, $iterator, $ifCond);
+                    $expr = $this->processForeach();
                     break;
                 case T_FOR :
-                    $this->logNext("2for", 2);
-                    $def = $this->processExpression();
-                    $this->logNext("for cond");
-                    $cond = $this->processExpression();
-                    $this->logNext("for count");
-                    $count = $this->processExpression();
-                    $this->logNext("for out");
-                    $ifCond = $this->processBracesScope();
-                    $expr = new ForDef($def, $cond, $count, $ifCond);
+                    $expr = $this->processFor();
                     break;
                 case T_CLASS :
                 case T_INTERFACE:
                 case T_TRAIT:
-
-                    $this->logNext("class start");
-                    $name = $this->current()->getValue();
-                    $this->log("name $name");
-                    $expr = new AbstractDataType(strtolower($token->getValue()), $name);
-                    $type = "";
-                    do {
-                        switch (strtolower($this->current()->getValue())) {
-                            case "extends" :
-                            case "implements":
-                                $type = strtolower($this->current()->getType());
-                                break;
-                            case "," :
-                                break;
-                            default :
-                                if ($type == "extends") {
-                                    $expr->addExtends($this->current()->getValue());
-                                } elseif ($type == "implements") {
-                                    $expr->addImplements($this->current()->getValue());
-                                }
-                                break;
-                        }
-                        $this->logNext("extends");
-                    } while (!$this->current()->equal("{"));
-                    $ifCond = $this->processBracesScope();
-                    foreach ($ifCond->getScope() as $line) {
-                        if ($line instanceof Procedure) {
-                            $expr->addMethod($line);
-                        } else {
-                            if ($line instanceof Binary) {
-                                $var = $line->getFirstOperand();
-                                $default = $line->getOperand();
-                            } else {
-                                $var = $line;
-                                $default = null;
-                            }
-                            $field = new ClassField($var);
-                            $field->copyModifiers($line);
-                            $field->setDefault($default);
-                            $expr->addField($field);
-                        }
-                    }
-
+                    $expr = $this->processClass();
                     break;
                 case T_FUNCTION:
-                    $this->logNext("func");
-                    $name = $this->current()->getValue();
-                    $expr = new Procedure($name);
-                    $this->logNext("func name");
-                    $this->logNext("func args");
-
-                    while ($this->current()->getValue() != ")") {
-
-                        $type = null;
-                        if ($this->current()->getType() != T_VARIABLE) {
-                            $type = $this->current()->getValue();
-                            $this->logNext("func arg type");
-                        }
-
-                        $name = ltrim($this->current()->getValue(), "$");
-                        $param = new ProcArgument($name, $type);
-                        $expr->addArg($param);
-                        $this->logNext("func arg value");
-
-                        if ($this->current()->getValue() == ",") {
-                            $this->logNext("func arg plain");
-                        } elseif ($this->current()->getValue() == "=") {
-
-                            $this->logNext("func arg def");
-
-                            $param->setDefault($this->processExpression([","]));
-
-                            if ($this->current()->getValue() == ",") {
-                                $this->logNext("func arg end");
-                            }
-                        } elseif ($this->current()->getValue() == ")") {
-                        } else {
-                            throw new FailException("func params parsing " . $this->current());
-                        }
-                    };
-
-                    $this->logNext("func args end");
-
-                    //
-                    if ($this->current()->equal("{")) {
-                        $ifCond = $this->processBracesScope();
-                        $expr->setBody($ifCond);
-                    }
-
-                    break;
-
-                case T_VAR:
-                case T_PUBLIC:
-                case T_PROTECTED:
-                case T_PRIVATE:
-                case T_STATIC:
-                case T_FINAL:
-                case T_ABSTRACT:
-                case T_CONST :
-                    $this->next();
+                    $expr = $this->processFunction();
                     break;
                 case T_USE:
-                    $this->logNext("use");
-                    $val = $this->processToken();
-                    $expr = new UseLine($val);
-
-                    if($this->current()->isTypeOf(T_AS)){
-                        $this->logNext("use as");
-                        $expr->setAs($this->processToken());
-                        $this->logNext("use as2");
-                    }
-                    if($this->current()->equal("{")){
-                        $ee = $this->processBracesScope();
-                        $expr->setMapping($ee);
-                    }else{
-                        $this->logNext("use out");
-                    }
+                    $expr = $this->processUse();
                     break;
                 case T_SWITCH :
-                    $this->logNext("switch2",2);
-                    $switchCond = $this->processExpression();
-                    $this->logNext("switch out");
-                    $expr = new SwitchExpr($switchCond);
-                    $this->logNext("switch body");
-
-                    while(!$this->current()->equal("}")){
-                        switch($this->current()->getType()){
-                            case T_CASE :
-                                $this->logNext("case");
-                                $cond = $this->processExpression([":"]);
-                                $this->logNext("case body");
-                                $body = $this->process();
-                                $case = new CaseDef($body,$cond);
-                                $expr->addCase($case);
-                                break;
-                            case T_DEFAULT :
-                                $this->logNext("default2",2);
-                                $body = $this->process();
-                                $def = new DefaultCase($body);
-                                $expr->setDefault($def);
-                                break;
-                            default:
-                                throw new FailException("unknown token");
-                        }
-                    }
-
+                    $expr = $this->processSwitch();
                     break;
+                case T_TRY :
+                    $expr = $this->processTry();
+                    break;
+                case T_DO :
+                    $expr = $this->processDo();
                 default:
                     $expr = $this->processExpression();
             }
-            if ($expr) {
-                $this->processModifiers($expr, $start);
 
-                if ($start->hasBlankLine()) {
-                    $expr->setHeadBlankLine();
-                }
+            $this->processModifiers($expr, $start);
 
-                $comment = trim($start->getComment());
-                if ($comment) {
-                    $expr->setComment($comment);
-                }
-                $scope->addExpression($expr);
-                $this->log("process end");
+            if ($start->hasBlankLine()) {
+                $expr->setHeadBlankLine();
             }
+
+            $comment = trim($start->getComment());
+            if ($comment) {
+                $expr->setComment($comment);
+            }
+            $scope->addExpression($expr);
+            $this->log("process end");
         }
 
         return $scope;

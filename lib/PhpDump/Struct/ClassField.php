@@ -16,9 +16,7 @@ class ClassField extends BaseDump
      * @return string
      */
     public function process($in, $level) {
-        return
-            $this->processHead($in, $level) . $this->processModifiers($in)
-            . $this->processExpression($in->getVariable(), $level + 1)
-            . ($in->getDefault() ? (" = " . $this->processExpression($in->getDefault(), $level + 1)) : "") . ";";
+        return $in->getName()
+            . ($in->getDefault() ? (" = " . $this->processExpression($in->getDefault(), $level + 1)) : "");
     }
 }

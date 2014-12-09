@@ -12,7 +12,7 @@ use PhpStruct\Expression\Variable;
 class ClassField extends Base
 {
 
-    private $var;
+    private $name;
 
     private $default;
 
@@ -20,8 +20,8 @@ class ClassField extends Base
         return ["var"];
     }
 
-    public function __construct(Variable $variable) {
-        $this->var = $variable;
+    public function __construct( $name) {
+        $this->name = $name;
     }
 
     /**
@@ -39,10 +39,10 @@ class ClassField extends Base
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getVariable() {
-        return $this->var;
+    public function getName() {
+        return $this->name;
     }
 
     /**
