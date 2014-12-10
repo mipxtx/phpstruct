@@ -7,9 +7,10 @@
 namespace PhpStruct\Struct;
 
 use PhpStruct\Base;
+use PhpStruct\Expression\HasScopes;
 use PhpStruct\Expression\Scope;
 
-class Procedure extends Base
+class Procedure extends Base implements HasScopes
 {
 
     /**

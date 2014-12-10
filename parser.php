@@ -2,7 +2,7 @@
 ini_set("display_errors", "On");
 require __DIR__ . "/init-dev.php";
 
-$path = "/Users/mix/wsp/mamba/.packages/AdminAnketa/AdminAnketa.inc";
+$path = "/Users/mix/wsp/mamba/.packages/AdminAnketa/Di.class.php";
 //$path = __DIR__ . "/sample/mess.php";
 //$path = __DIR__ . "/sample/class.php";
 //$path  = __DIR__ . "/sample/micro.php";

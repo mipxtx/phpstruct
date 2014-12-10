@@ -6,6 +6,8 @@
 
 namespace PhpAnalyzer;
 
+use PhpParser\Helper;
+
 class Indexer
 {
 
@@ -36,10 +38,15 @@ class Indexer
 
         foreach($files as $file){
 
-            $f = new \PhpParser\FileLoader($file, $this->cacheDir);
-            //$f->enableDebug();
-            //echo $file . "\n";
-            $f->getTree();
+            try {
+                $f = new \PhpParser\FileLoader($file, $this->cacheDir);
+                //$f->enableDebug();
+                //echo $file . "\n";
+                $f->getTree();
+            }catch(\Exception $e){
+                echo "caught exception while parsing $file with message " . $e->getMessage() . "\n" . Helper::buildTrace($e->getTrace());
+                die();
+            }
         }
     }
 

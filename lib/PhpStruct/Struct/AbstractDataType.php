@@ -40,11 +40,6 @@ class AbstractDataType extends Base
      */
     private $uses = [];
 
-    /**
-     * @var DefineUsage
-     */
-    private $constants = [];
-
     public static function getConstructorFields(){
         return ["type", "name"];
     }
@@ -124,21 +119,6 @@ class AbstractDataType extends Base
      */
     public function addUse($use) {
         $this->uses[] = $use;
-    }
-
-
-    /**
-     * @return DefineUsage
-     */
-    public function getConstants() {
-        return $this->constants;
-    }
-
-    /**
-     * @param DefineUsage $constant
-     */
-    public function addConstant($constant) {
-        $this->constants[] = $constant;
     }
 
     /**

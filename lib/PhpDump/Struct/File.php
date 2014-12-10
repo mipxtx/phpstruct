@@ -16,7 +16,15 @@ class File extends BaseDump
      * @return string
      */
     public function process($in, $level) {
-        $out = "<?php\n";
+        $out = "<?php\n\n";
+
+        if($in->getNamespace()){
+            $out .= "namespace " . $in->getNamespace() . ";\n\n";
+        }
+
+        foreach($in->getUses() as $use){
+            $out .= $this->processExpression($use, 0) . ";\n";
+        }
 
         $out .= $this->processExpression($in->getCode(), -1);
 

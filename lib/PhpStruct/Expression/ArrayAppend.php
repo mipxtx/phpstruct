@@ -27,4 +27,8 @@ class ArrayAppend extends Base
     public function getChildren() {
         return [$this->variable];
     }
+
+    public static function getConstructorFields(){
+        return ["variable"];
+    }
 }

@@ -82,7 +82,7 @@ class Expression
         ["xor"],
         ["or"],
         [","],
-        ["exit", "die", "echo", "print", "return"],
+        ["exit", "die", "echo", "print", "return", "namespace"],
         ["as"],
     ];
 
@@ -120,6 +120,13 @@ class Expression
     }
 
     public function processString($value) {
+
+        $this->log("process string");
+
+        if($this->current()->getType() == T_NS_SEPARATOR){
+            $value .= $this->parseNsSeparator();
+        }
+
         if ($this->current()->getValue() == "(") {
             $out = new FunctionCall($value);
             $this->parseArgs($out);
@@ -128,6 +135,17 @@ class Expression
         }
 
         return $out;
+    }
+
+    public function parseNsSeparator(){
+        $string = "";
+        $current = $this->current();
+        do {
+            $string .= $current->getValue();
+            $current = $this->logNext("ns");
+        } while ($current->getType() == T_STRING || $current->getType() == T_NS_SEPARATOR);
+        $this->log("ns out");
+        return $string;
     }
 
     /**
@@ -150,21 +168,15 @@ class Expression
             case T_CLASS_C:
             case T_FUNC_C:
             case T_LIST:
+            case T_CLASS:
                 $string = $token->getValue();
                 $this->logNext("string");
                 $out = $this->processString($string);
                 break;
             case T_NS_SEPARATOR :
-
-                $string = "";
-                $current = $this->current();
-                do {
-                    $string .= $current->getValue();
-                    $current = $this->logNext("ns");
-                } while ($current->getType() == T_STRING || $current->getType() == T_NS_SEPARATOR);
-                $this->log("ns out");
-                $out = $this->processString($string);
+                $out =  $this->processString($this->parseNsSeparator());
                 break;
+            case T_DNUMBER:
             case T_LNUMBER :
             case T_ENCAPSED_AND_WHITESPACE:
             case T_CONSTANT_ENCAPSED_STRING :
@@ -579,6 +591,7 @@ class Expression
                     break;
                 case T_DO :
                     $expr = $this->processDo();
+                    break;
                 default:
                     $expr = $this->processExpression();
             }

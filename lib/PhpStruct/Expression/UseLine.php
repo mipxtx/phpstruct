@@ -62,4 +62,7 @@ class UseLine extends Base
     public function getChildren() {
         // TODO: Implement getChildren() method.
     }
+    public static function getConstructorFields(){
+        return ["class"];
+    }
 }

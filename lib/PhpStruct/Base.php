@@ -88,8 +88,13 @@ abstract class Base
     public static function __set_state(array $data){
 
         $fields = [];
-        foreach(static::getConstructorFields() as $name){
-            $fields[] = $data[$name];
+        foreach (static::getConstructorFields() as $name) {
+            if (array_key_exists($name, $data)) {
+                $fields[] = $data[$name];
+            } else {
+                throw new FailException("unknown field $name in " . get_called_class());
+            }
+
             unset($data[$name]);
         }
         $out = new static(...$fields);

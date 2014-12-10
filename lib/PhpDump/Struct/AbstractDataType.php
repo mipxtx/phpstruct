@@ -7,6 +7,7 @@
 namespace PhpDump\Struct;
 
 use PhpDump\BaseDump;
+use PhpStruct\Expression\HasScopes;
 
 class AbstractDataType extends BaseDump
 {
@@ -18,8 +19,7 @@ class AbstractDataType extends BaseDump
     public function process($in, $level) {
 
         $out =
-            $this->processHead($in, $level) . $this->processModifiers($in) . $in->getType() . " " . $in->getName()
-            . " ";
+            $this->processModifiers($in) . $in->getType() . " " . $in->getName() . " ";
 
         if ($in->getExtends()) {
             $out .= "extends " . implode(", ", $in->getExtends()) . " ";
@@ -31,10 +31,18 @@ class AbstractDataType extends BaseDump
 
         $out .= "{\n";
 
-        $members = array_merge($in->getUses(),$in->getFields(),$in->getMethods());
+        $members = array_merge($in->getUses(), $in->getFields(), $in->getMethods());
 
-        foreach($members as $member){
-            $out .= $this->getLevelShift($level + 1) . $this->processExpression($member, $level + 1) . ";\n";
+        foreach ($members as $member) {
+            $out .=
+                $this->getLevelShift($level+1)
+                . $this->processHead($member, $level + 1)
+                . $this->processModifiers($member)
+                . $this->processExpression($member, $level + 1);
+            if(! $member instanceof HasScopes){
+                $out .= ";";
+            }
+            $out .= "\n";
         }
 
         $out .= "}";

@@ -17,7 +17,7 @@ class ClassField extends Base
     private $default;
 
     public static function getConstructorFields(){
-        return ["var"];
+        return ["name"];
     }
 
     public function __construct( $name) {

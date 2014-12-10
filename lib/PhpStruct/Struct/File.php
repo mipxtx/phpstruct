@@ -7,7 +7,9 @@
 namespace PhpStruct\Struct;
 
 use PhpStruct\Base;
+use PhpStruct\Expression\DefineUsage;
 use PhpStruct\Expression\Scope;
+use PhpStruct\Expression\UseLine;
 
 class File extends Base
 {
@@ -26,6 +28,13 @@ class File extends Base
      * @var array
      */
     private $uses = [];
+
+    /**
+     * @return array
+     */
+    public function getUses() {
+        return $this->uses;
+    }
 
     /**
      * @var Procedure[]
@@ -52,8 +61,11 @@ class File extends Base
         $this->code = new Scope();
     }
 
-    public function setNameSpace($name) {
-        $this->namespace = $name;
+    public function setNameSpaceItem(DefineUsage $name) {
+        $this->namespace = $name->getName();
+    }
+    public function setNamespace($namespace){
+        $this->namespace = $namespace;
     }
 
     public function addFunction(Procedure $function) {
@@ -64,11 +76,8 @@ class File extends Base
         $this->classes[] = $class;
     }
 
-    public function addUse($full, $alias = null) {
-        if ($alias === null) {
-            $alias = array_pop(explode("\\", $full));
-            $this->uses[$alias] = $full;
-        }
+    public function addUse(UseLine $use) {
+        $this->uses[] = $use;
     }
 
     public function mergeScope(Scope $scope){

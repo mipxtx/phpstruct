@@ -69,4 +69,7 @@ class SwitchExpr extends Base implements HasScopes{
 
 
 
+    public static function getConstructorFields(){
+        return ["condition"];
+    }
 }

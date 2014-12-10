@@ -50,4 +50,8 @@ class TryDef extends Base {
     public function getBody() {
         return $this->body;
     }
+    public static function getConstructorFields(){
+        return ["body",];
+    }
+
 }

@@ -25,4 +25,8 @@ class CaseDef extends DefaultCase{
         return $this->case;
     }
 
+    public static function getConstructorFields(){
+        return ["body", "case"];
+    }
+
 }

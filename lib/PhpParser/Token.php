@@ -154,7 +154,8 @@ class Token
                 ">>",
                 "^",
                 "as",
-                "instanceof"
+                "instanceof",
+                "and",
             ]
         );
     }
@@ -195,6 +196,7 @@ class Token
                 "final",
                 "static",
                 "&",
+                "namespace",
             ]
         );
     }

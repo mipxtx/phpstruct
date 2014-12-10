@@ -57,4 +57,15 @@ class ForDef extends Base implements HasScopes
     public function getBody() {
         return $this->body;
     }
+
+    public static function getConstructorFields(){
+        return ["define","condition","counter","body",];
+    }
+
+    /**
+     * @return Base[]
+     */
+    public function getChildren() {
+        // TODO: Implement getChildren() method.
+    }
 }

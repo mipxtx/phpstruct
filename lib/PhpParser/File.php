@@ -1,7 +1,8 @@
 <?php
 namespace PhpParser;
 
-use PhpStruct\Expression\Scope;
+use PhpDump\Expression\Unary;
+use PhpStruct\Expression\UseLine;
 use PhpStruct\Struct\AbstractDataType;
 use PhpStruct\Struct\Procedure;
 
@@ -35,30 +36,27 @@ class File
         $expressionProcessor = new Expression($this->getIterator());
         if ($this->isEnabled()) {
             $expressionProcessor->enableDebug();
-
         }
         while (!$this->end()) {
-            $token = $this->current();
-            if ($token->getType() == T_NAMESPACE) {
-                $this->log("add NS");
-                $value = $this->next();
-                $this->next(); // ;
-                $file->setNameSpace($value);
-            } else {
-                $this->log("start expr");
-                $scope = $expressionProcessor->process();
+            $this->log("start expr");
+            $scope = $expressionProcessor->process();
 
-                foreach($scope->getScope() as $line){
-                    if($line instanceof AbstractDataType){
-                        $file->addClass($line);
-                    }elseif($line instanceof Procedure){
-                        $file->addFunction($line);
-                    }else{
-                        $file->addExpression($line);
-                    }
+            foreach ($scope->getScope() as $line) {
+                if ($line instanceof AbstractDataType) {
+                    $file->addClass($line);
+                } elseif ($line instanceof Procedure) {
+                    $file->addFunction($line);
+                } elseif ($line instanceof UseLine) {
+                    $file->addUse($line);
+                } elseif (
+                    $line instanceof \PhpStruct\Expression\Unary
+                    && strtolower($line->getOperator()) == "namespace"
+                ) {
+                    $file->setNameSpaceItem($line->getOperand());
+                } else {
+                    $file->addExpression($line);
                 }
             }
-
         }
 
         return $file;
