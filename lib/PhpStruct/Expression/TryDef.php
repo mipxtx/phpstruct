@@ -23,10 +23,29 @@ class TryDef extends Base {
     private $catches = [];
 
     /**
+     * @var Scope
+     */
+    private $finally = null;
+
+    /**
      * @param Scope $body
      */
     public function __construct(Scope $body){
         $this->body = $body;
+    }
+
+    /**
+     * @return Scope
+     */
+    public function getFinally() {
+        return $this->finally;
+    }
+
+    /**
+     * @param Scope $finally
+     */
+    public function setFinally(Scope $finally) {
+        $this->finally = $finally;
     }
 
     /**

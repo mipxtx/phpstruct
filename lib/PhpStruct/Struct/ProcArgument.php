@@ -18,7 +18,9 @@ class ProcArgument extends Base
      */
     private $type = "";
 
-    private $default;
+    private $default = null;
+
+    private $link = false;
 
     public static function getConstructorFields(){
         return ["name", "type"];
@@ -27,6 +29,20 @@ class ProcArgument extends Base
     public function __construct($name, $type = "") {
         $this->name = $name;
         $this->type = $type;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isLink() {
+        return $this->link;
+    }
+
+    /**
+     * 
+     */
+    public function setLink() {
+        $this->link = true;
     }
 
     /**

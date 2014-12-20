@@ -13,6 +13,19 @@ class QuotedString extends Base
 {
     private $elements = [];
 
+    private $execute = false;
+
+    /**
+     * @return boolean
+     */
+    public function isExecute() {
+        return $this->execute;
+    }
+
+    public function setExecute() {
+        $this->execute = true;
+    }
+
     public function addElement($element){
         $this->elements[] = $element;
     }

@@ -7,39 +7,44 @@
 namespace PhpStruct\Struct;
 
 use PhpStruct\Base;
-use PhpStruct\Expression\Variable;
+use PhpStruct\HasNameInterface;
 
 class ClassField extends Base
 {
-
+    /**
+     * @var HasNameInterface
+     */
     private $name;
 
-    private $default;
+    /**
+     * @var Base
+     */
+    private $default = null;
 
     public static function getConstructorFields(){
         return ["name"];
     }
 
-    public function __construct( $name) {
+    public function __construct(HasNameInterface $name) {
         $this->name = $name;
     }
 
     /**
-     * @param mixed $default
+     * @param Base $default
      */
-    public function setDefault($default) {
+    public function setDefault(Base $default = null) {
         $this->default = $default;
     }
 
     /**
-     * @return mixed
+     * @return Base
      */
     public function getDefault() {
         return $this->default;
     }
 
     /**
-     * @return string
+     * @return Base
      */
     public function getName() {
         return $this->name;

@@ -9,7 +9,7 @@ namespace PhpStruct\Expression;
 
 use PhpStruct\Base;
 
-class DoDef extends Base{
+class ConditionLoop extends Base implements HasScopes{
 
     /**
      * @var Scope
@@ -25,6 +25,8 @@ class DoDef extends Base{
      * @var string
      */
     private $type;
+
+    private $conditionFirst = false;
 
     function __construct(Scope $body, Base $condition, $type) {
         $this->body = $body;
@@ -53,7 +55,23 @@ class DoDef extends Base{
         return $this->type;
     }
 
+    /**
+     * @return boolean
+     */
+    public function isConditionFirst() {
+        return $this->conditionFirst;
+    }
 
+    /**
+     * @param boolean $conditionFirst
+     */
+    public function setConditionFirst() {
+        $this->conditionFirst = true;
+    }
+
+    public static function getConstructorFields(){
+        return ["body","condition","type"];
+    }
 
     /**
      * @return Base[]

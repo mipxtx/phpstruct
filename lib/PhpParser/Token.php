@@ -8,8 +8,33 @@ namespace PhpParser;
 
 class Token
 {
+    // ?
     const T_TERNARY = 1000;
-    const T_QUOTE = 1001;
+    // "
+    const T_DOUBLE_QUOTE = 1001;
+    // ,
+    const T_COMMA = 1002;
+    // :
+    const T_COLON = 1003;
+    // ;
+    const T_SEMICOLON = 1004;
+    // `
+    const T_BACKTICK = 1005;
+    // {
+    const T_BRACE_OPEN = 1006;
+    // }
+    const T_BRACE_CLOSE = 1007;
+    // [
+    const T_SQ_BRACKETS_OPEN = 1008;
+    // ]
+    const T_SQ_BRACKETS_CLOSE = 1009;
+    // (
+    const T_BRACKETS_OPEN = 1010;
+    // )
+    const T_BRACKETS_CLOSE = 1011;
+    // $
+    const T_DOLLAR = 1012;
+
 
     private $type = 0;
 
@@ -26,7 +51,19 @@ class Token
 
     static $map = [
         "?" => self::T_TERNARY,
-        '"' => self::T_QUOTE
+        '"' => self::T_DOUBLE_QUOTE,
+        ':' => self::T_COLON,
+        ';' => self::T_SEMICOLON,
+        ',' => self::T_COMMA,
+        '`' => self::T_BACKTICK,
+        '{' => self::T_BRACE_OPEN,
+        '}' => self::T_BRACE_CLOSE,
+        '[' => self::T_SQ_BRACKETS_OPEN,
+        ']' => self::T_SQ_BRACKETS_CLOSE,
+        '(' => self::T_BRACKETS_OPEN,
+        ')' => self::T_BRACKETS_CLOSE,
+        '$' => self::T_DOLLAR,
+
     ];
 
     public function __construct($token, $number, TokenIterator $iterator) {
@@ -50,11 +87,18 @@ class Token
     }
 
     /**
-     * @param $type
+     * @param $types
      * @return bool
      */
-    public function isTypeOf($type) {
-        return $type == $this->type;
+    public function isTypeOf($types) {
+        if(!is_array($types)){
+            $types = [$types];
+        }
+        $out = false;
+        foreach($types as $type){
+            $out |= ($type == $this->getType());
+        }
+        return $out;
     }
 
     public function getType() {
@@ -94,12 +138,12 @@ class Token
     }
 
     public function __toString() {
-
         $line = $this->line !== null ? $this->line : ($this->getPreLine() ? "~" . $this->getPreLine() : null);
-
-        return "[$this->number] "
-        . var_export($this->getValue(), 1) . " (" . $this->getStringType() . ")"
-        . ($line !== null ? " at line " . ($line) : "");
+        $value = str_replace("\n", '\n',trim($this->getValue()));
+        if(mb_strlen($value) > 20){
+            $value = mb_strcut($value,0,20) . "...";
+        }
+        return "[$this->number] '$value' (" . $this->getStringType() . ")" . ($line !== null ? " at line $line" : "");
     }
 
     public function getPreLine() {
@@ -120,7 +164,7 @@ class Token
 
     public function isBinary() {
         return in_array(
-            $this->getValue(),
+            strtolower($this->getValue()),
             [
                 ".",
                 ",",
@@ -143,6 +187,7 @@ class Token
                 "===",
                 ">",
                 "<",
+                "<>",
                 "<=",
                 ">=",
                 "+=",
@@ -150,12 +195,18 @@ class Token
                 ".=",
                 "|=",
                 "&=",
+                "*=",
+                "/=",
+                "%=",
+                "^=",
                 "<<",
                 ">>",
                 "^",
                 "as",
                 "instanceof",
                 "and",
+                "or",
+                "xor",
             ]
         );
     }
@@ -186,19 +237,24 @@ class Token
                 "(int)",
                 "(integer)",
                 "(float)",
+                "(double)",
                 "(bool)",
+                "(boolean)",
                 "(string)",
                 "(array)",
-                "public",
-                "protected",
-                "private",
-                "abstract",
-                "final",
-                "static",
+                "(object)",
                 "&",
                 "namespace",
+                "global",
+                "throw",
+                "clone",
+                "$"
             ]
         );
+    }
+
+    public function canUnary(){
+        return in_array( strtolower($this->getValue()), [ "-","+" ] );
     }
 
     public function getComment() {
@@ -207,5 +263,9 @@ class Token
 
     public function hasBlankLine() {
         return $this->iterator->hasBlankLine($this->getId());
+    }
+
+    public function isModifier(){
+        return $this->isTypeOf([T_VAR, T_PUBLIC, T_PROTECTED, T_PRIVATE, T_FINAL, T_ABSTRACT, T_CONST]);
     }
 }

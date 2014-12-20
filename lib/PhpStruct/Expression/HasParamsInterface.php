@@ -8,7 +8,7 @@ namespace PhpStruct\Expression;
 
 use PhpStruct\Base;
 
-interface HasArgsInterface
+interface HasParamsInterface
 {
-    public function addArg(Base $argument);
+    public function addParam(Base $argument);
 }

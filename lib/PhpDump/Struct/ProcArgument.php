@@ -17,7 +17,7 @@ class ProcArgument extends BaseDump
      */
     public function process($in, $level) {
         return ($in->getType() ? $in->getType() . " " : "")
-        . "$".$in->getName()
+        . ($in->isLink()? "&":"" ). "$".$in->getName()
         . ($in->getDefault() ? (" = ". $this->processExpression($in->getDefault(),$level+1)) : "");
     }
 }

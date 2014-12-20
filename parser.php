@@ -2,12 +2,11 @@
 ini_set("display_errors", "On");
 require __DIR__ . "/init-dev.php";
 
-$path = "/Users/mix/wsp/mamba/.packages/AdminAnketa/Di.class.php";
 //$path = __DIR__ . "/sample/mess.php";
 //$path = __DIR__ . "/sample/class.php";
-//$path  = __DIR__ . "/sample/micro.php";
+$path  = __DIR__ . "/sample/micro.php";
 //$path  = __DIR__ . "/sample/if.php";
-
+//$path = "/Users/mix/wsp/mamba/.packages/Transaction/Bonus/Mapper.class.php";
 $f = new \PhpParser\FileLoader($path);
 $f->enableDebug();
 $f->disableCache();

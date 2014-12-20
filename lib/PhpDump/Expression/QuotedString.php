@@ -7,7 +7,9 @@
 namespace PhpDump\Expression;
 
 use PhpDump\BaseDump;
+use PhpStruct\Expression\ArrayAccess;
 use PhpStruct\Expression\Operator;
+use PhpStruct\Expression\Variable as myVar;
 
 class QuotedString extends BaseDump
 {
@@ -17,12 +19,15 @@ class QuotedString extends BaseDump
      * @return string
      */
     public function process($in, $level) {
-        $out = '"';
+
+        $sign = $in->isExecute() ? "`" : '"';
+
+        $out = $sign;
         foreach ($in->getElements() as $element) {
-            $brace = ($element instanceof Variable || $element instanceof Operator);
+            $brace = ($element instanceof myVar || $element instanceof Operator || $element instanceof ArrayAccess);
             $out .= ($brace ? "{" : "") . $this->processExpression($element, $level) . ($brace ? "}" : "");
         }
-        $out .= '"';
+        $out .= $sign;
 
         return $out;
     }

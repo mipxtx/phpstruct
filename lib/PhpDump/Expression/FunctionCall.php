@@ -18,10 +18,13 @@ class FunctionCall extends BaseDump
     public function process($in, $level) {
         $name = $in->getName();
         $args = [];
-        foreach ($in->getArgs() as $arg) {
+        foreach ($in->getParams() as $arg) {
             $args[] = $this->processExpression($arg, $level + 1);
         }
 
-        return "{$name}(" . implode(", ", $args) . ")";
+        return
+            ($in->isObjectCreate()?"new ":"")
+            . $this->processExpression($name, $level)
+            . "(" . implode(", ", $args) . ")";
     }
 }

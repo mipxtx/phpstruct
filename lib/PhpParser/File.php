@@ -2,6 +2,7 @@
 namespace PhpParser;
 
 use PhpDump\Expression\Unary;
+use PhpStruct\Expression\UseBlock;
 use PhpStruct\Expression\UseLine;
 use PhpStruct\Struct\AbstractDataType;
 use PhpStruct\Struct\Procedure;
@@ -46,7 +47,7 @@ class File
                     $file->addClass($line);
                 } elseif ($line instanceof Procedure) {
                     $file->addFunction($line);
-                } elseif ($line instanceof UseLine) {
+                } elseif ($line instanceof UseBlock) {
                     $file->addUse($line);
                 } elseif (
                     $line instanceof \PhpStruct\Expression\Unary

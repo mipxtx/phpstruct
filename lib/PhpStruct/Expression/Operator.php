@@ -10,7 +10,6 @@ use PhpStruct\Base;
 
 abstract class Operator extends Base
 {
-
     /**
      * @var string
      */

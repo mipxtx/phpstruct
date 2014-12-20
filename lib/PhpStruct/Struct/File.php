@@ -9,6 +9,7 @@ namespace PhpStruct\Struct;
 use PhpStruct\Base;
 use PhpStruct\Expression\DefineUsage;
 use PhpStruct\Expression\Scope;
+use PhpStruct\Expression\UseBlock;
 use PhpStruct\Expression\UseLine;
 
 class File extends Base
@@ -25,15 +26,15 @@ class File extends Base
     private $namespace;
 
     /**
-     * @var array
+     * @var UseBlock
      */
-    private $uses = [];
+    private $use;
 
     /**
-     * @return array
+     * @return UseLine[]
      */
     public function getUses() {
-        return $this->uses;
+        return $this->use->getUses();
     }
 
     /**
@@ -59,6 +60,7 @@ class File extends Base
     public function __construct($name) {
         $this->path = $name;
         $this->code = new Scope();
+        $this->use = new UseBlock();
     }
 
     public function setNameSpaceItem(DefineUsage $name) {
@@ -76,8 +78,12 @@ class File extends Base
         $this->classes[] = $class;
     }
 
-    public function addUse(UseLine $use) {
-        $this->uses[] = $use;
+    public function addUse(UseBlock $use) {
+        $this->use->merge($use);
+    }
+
+    public function setUse(UseBlock $use){
+        $this->addUse($use);
     }
 
     public function mergeScope(Scope $scope){

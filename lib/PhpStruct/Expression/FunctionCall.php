@@ -8,14 +8,44 @@ namespace PhpStruct\Expression;
 
 use PhpStruct\Base;
 
-class FunctionCall extends Base implements HasArgsInterface
+class FunctionCall extends Base implements HasParamsInterface
 {
-    use ArgsTrait, NamedTrait;
+    use ParamsTrait;
+
+    private $name;
+
+    private $objectCreate = false;
+
+    public function __construct(Base $name){
+        $this->name = $name;
+    }
+
+    /**
+     * @return Base
+     */
+    public function getName() {
+        return $this->name;
+    }
 
     /**
      * @return Base[]
      */
     public function getChildren() {
-        return $this->getArgs();
+        return $this->getParams();
+    }
+
+    public static function getConstructorFields(){
+        return ["name"];
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isObjectCreate() {
+        return $this->objectCreate;
+    }
+
+    public function setObjectCreate() {
+        $this->objectCreate = true;
     }
 }

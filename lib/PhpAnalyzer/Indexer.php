@@ -23,51 +23,52 @@ class Indexer
     }
 
     public function addRoot($root) {
-        if(!file_exists($root)){
+        if (!file_exists($root)) {
             return;
         }
         $this->root[] = realpath($root) . "/";
     }
 
-    public function create(){
+    public function create() {
         $files = [];
 
-        foreach($this->root as $root){
-            $files = array_merge($files,$this->scanDir($root));
+        foreach ($this->root as $root) {
+            $files = array_merge($files, $this->scanDir($root));
         }
 
-        foreach($files as $file){
-
+        foreach ($files as $file) {
             try {
                 $f = new \PhpParser\FileLoader($file, $this->cacheDir);
                 //$f->enableDebug();
-                //echo $file . "\n";
+                echo $file . "\n";
                 $f->getTree();
-            }catch(\Exception $e){
-                echo "caught exception while parsing $file with message " . $e->getMessage() . "\n" . Helper::buildTrace($e->getTrace());
+            } catch (\Exception $e) {
+                echo "caught exception while parsing $file with message " . $e->getMessage() . " at " . $e->getFile()
+                    . ":" . $e->getLine() . "\n" . Helper::buildTrace($e->getTrace());
                 die();
             }
         }
     }
 
-    public function scanDir($dir){
+    public function scanDir($dir) {
         $files = scandir($dir);
         array_shift($files);
         array_shift($files);
 
         $out = [];
 
-        foreach($files as $file){
-            if(is_dir($dir . $file)){
-                $out = array_merge($out,$this->scanDir($dir . $file . "/"));
-            }else{
-                $rr = explode(".",$file);
+        foreach ($files as $file) {
+            if (is_dir($dir . $file)) {
+                $out = array_merge($out, $this->scanDir($dir . $file . "/"));
+            } else {
+                $rr = explode(".", $file);
                 $ext = array_pop($rr);
-                if(in_array($ext,$this->files)){
+                if (in_array($ext, $this->files)) {
                     $out[] = $dir . $file;
                 }
             }
         }
+
         return $out;
     }
 
@@ -76,5 +77,4 @@ class Indexer
             mkdir($dir, 0777, true);
         }
     }
-
 }

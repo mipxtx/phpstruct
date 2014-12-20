@@ -17,9 +17,9 @@ class Procedure extends BaseDump
      */
     public function process($in, $level) {
 
-        $out = "function " . $in->getName() . "(";
+        $out = "function " . ($in->isLinkResult()?"& ":""). $in->getName() . "(";
         $args = [];
-        foreach ($in->getArgList() as $arg) {
+        foreach ($in->getProcArgs() as $arg) {
             $args[] = $this->processExpression($arg,$level+1);
         }
 

@@ -17,7 +17,7 @@ class ArrayDef extends BaseDump
      */
     public function process($in, $level) {
         $out = [];
-        foreach ($in->getArgs() as $item) {
+        foreach ($in->getParams() as $item) {
             $out[] = $this->processExpression($item, $level + 1);
         }
 

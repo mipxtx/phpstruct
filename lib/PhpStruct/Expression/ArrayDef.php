@@ -8,15 +8,15 @@ namespace PhpStruct\Expression;
 
 use PhpStruct\Base;
 
-class ArrayDef extends Base implements HasArgsInterface
+class ArrayDef extends Base implements HasParamsInterface
 {
-    use ArgsTrait;
+    use ParamsTrait;
 
     /**
      * @return Base[]
      */
     public function getChildren() {
-        return $this->getArgs();
+        return $this->getParams();
     }
 
 }

@@ -7,37 +7,70 @@
 namespace PhpStruct\Struct;
 
 use PhpStruct\Base;
+use PhpStruct\Expression\HasParamsInterface;
 use PhpStruct\Expression\HasScopes;
 use PhpStruct\Expression\Scope;
+use PhpStruct\Expression\Variable;
 
-class Procedure extends Base implements HasScopes
+class Procedure extends Base implements HasScopes, HasParamsInterface
 {
 
     /**
      * @var string
      */
-    private $name;
+    private $name = null;
 
     /**
      * @var ProcArgument[]
      */
-    private $args = [];
+    private $procArgs = [];
 
     /**
      * @var Scope
      */
     private $body;
 
-    public function __construct($name) {
+    /**
+     * @var Variable
+     */
+    private $uses = [];
+
+    private $linkResult = false;
+
+    /**
+     * @return boolean
+     */
+    public function isLinkResult() {
+        return $this->linkResult;
+    }
+
+    /**
+     * @param boolean $linkResult
+     */
+    public function setLinkResult() {
+        $this->linkResult = true;
+    }
+
+    /**
+     * @return Variable
+     */
+    public function getUses() {
+        return $this->uses;
+    }
+
+    /**
+     * @param Variable $use
+     */
+    public function addUse(Base $use) {
+        $this->uses[] = $use;
+    }
+
+
+    /**
+     * @param string $name
+     */
+    public function setName($name) {
         $this->name = $name;
-    }
-
-    public static function getConstructorFields(){
-        return ["name"];
-    }
-
-    public function addArg(ProcArgument $arg) {
-        $this->args[] = $arg;
     }
 
     /**
@@ -47,11 +80,15 @@ class Procedure extends Base implements HasScopes
         return $this->name;
     }
 
+    public function addProcArg(ProcArgument $arg) {
+        $this->procArgs[] = $arg;
+    }
+
     /**
      * @return ProcArgument[]
      */
-    public function getArgList() {
-        return $this->args;
+    public function getProcArgs() {
+        return $this->procArgs;
     }
 
     /**
@@ -73,5 +110,9 @@ class Procedure extends Base implements HasScopes
      */
     public function getChildren() {
         return [$this->body];
+    }
+
+    public function addParam(Base $argument) {
+        $this->addUse($argument);
     }
 }

@@ -16,7 +16,7 @@ class UseLine extends BaseDump{
      * @return string
      */
     public function process($in, $level) {
-        $out =  "use " . $this->processExpression($in->getClass(),$level);
+        $out =  $this->processExpression($in->getClass(),$level);
         if($in->getAs()){
             $out .= " as " . $this->processExpression($in->getAs(),$level);
         }
