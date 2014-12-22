@@ -44,6 +44,7 @@ use PhpStruct\Expression\Variable;
 use PhpStruct\HasNameInterface;
 use PhpStruct\Struct\AbstractDataType;
 use PhpStruct\Struct\ClassField;
+use PhpStruct\Struct\NamespaceDef;
 use PhpStruct\Struct\ProcArgument;
 use PhpStruct\Struct\Procedure;
 
@@ -153,9 +154,6 @@ class Expression
         return $this->checkFunction($out);
     }
 
-
-
-
     public function parseStringTemplates($stopOnType) {
         $this->logNext("start quoted");
 
@@ -166,17 +164,17 @@ class Expression
                 && $this->current()->getType() !== T_CURLY_OPEN
             ) {
                 $expr = $this->processToken();
-                if($this->current()->equal("->")){
+                if ($this->current()->equal("->")) {
                     $this->logNext("quoted ->");
-                    $expr = new Binary("->",$expr);
+                    $expr = new Binary("->", $expr);
                     $op2 = new DefineUsage($this->current()->getValue());
                     $expr->setOperand($op2);
                     $this->logNext("->quoted");
-                }elseif($this->current()->equal("[")){
+                } elseif ($this->current()->equal("[")) {
                     $this->logNext("quoted[");
                     $op2 = new DefineUsage($this->current()->getValue());
-                    $expr = new ArrayAccess($expr,$op2);
-                    $this->logNext("2]quoted",2);
+                    $expr = new ArrayAccess($expr, $op2);
+                    $this->logNext("2]quoted", 2);
                 }
 
                 $out->addElement($expr);
@@ -276,7 +274,7 @@ class Expression
                 break;
             case Token::T_DOLLAR :
                 // ${
-                $this->logNext("2\${",2);
+                $this->logNext("2\${", 2);
                 $body = $this->processExpression();
                 $out = new Dereference($body);
                 $this->logNext('${ out');
@@ -345,9 +343,9 @@ class Expression
             $this->current()->isTypeOf(T_ELSEIF)
             || ($this->current()->isTypeOf(T_ELSE) && $this->current()->next()->isTypeOf(T_IF))
         ) {
-            if($this->current()->isTypeOf(T_ELSEIF)){
+            if ($this->current()->isTypeOf(T_ELSEIF)) {
                 $this->logNext("2elseif", 2);
-            }else{
+            } else {
                 $this->logNext("3elseif", 3);
             }
             $elseIfCond = $this->processExpression();
@@ -656,7 +654,6 @@ class Expression
         return new ConditionLoop($body, $cond, $type);
     }
 
-
     public function processDeclare() {
         $this->logNext("declare");
 
@@ -664,10 +661,11 @@ class Expression
         $ret = new DeclareDef($cond);
         $this->log("dec");
 
-        if($this->current()->equal("{")) {
+        if ($this->current()->equal("{")) {
             $body = $this->processBracesScope();
             $ret->setBody($body);
         }
+
         return $ret;
     }
 
@@ -758,6 +756,21 @@ class Expression
                 case T_DECLARE :
                     $expr = $this->processDeclare();
                     break;
+                case T_NAMESPACE :
+                    $this->logNext("namespace");
+                    $name = $this->current()->equal("{") ? "" : $this->parseString()->getName();
+                    $this->log("name space");
+                    $expr = new NamespaceDef($name);
+                    if ($this->current()->equal("{")) {
+                        $body = $this->processBracesScope();
+                        foreach ($body->getScope() as $line) {
+                            $expr->addLine($line);
+                        }
+                    } else {
+                        $this->logNext("ns;");
+                    }
+                    $this->log("end");
+                    break;
                 default:
                     $expr = $this->processExpression();
             }
@@ -772,10 +785,10 @@ class Expression
             if ($comment) {
                 $expr->setComment($comment);
             }
+
             $scope->addExpression($expr);
             $this->log("process end");
         }
-
         return $scope;
     }
 

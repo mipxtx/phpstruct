@@ -19,6 +19,6 @@ require __DIR__ . "/init-dev.php";
 //$tester = new \PhpAnalyzer\Tester($out[0]);
 //$tester->createTests();
 
-$indexer = new \PhpAnalyzer\Indexer(__DIR__ . "/cache/");
-$indexer->addRoot("/Users/mix/wsp/mamba/.packages");
+$indexer = new \PhpAnalyzer\Indexer("~/.phpstruct/");
+$indexer->addRoot("/Users/mix/wsp/mamba/");
 $indexer->create();

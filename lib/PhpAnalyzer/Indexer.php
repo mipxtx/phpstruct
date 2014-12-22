@@ -18,8 +18,7 @@ class Indexer
     private $cacheDir;
 
     public function __construct($cache) {
-        $this->cacheDir = realpath($cache);
-        $this->mkdir($this->cacheDir);
+        $this->cacheDir = $cache;
     }
 
     public function addRoot($root) {
@@ -52,12 +51,18 @@ class Indexer
 
     public function scanDir($dir) {
         $files = scandir($dir);
-        array_shift($files);
-        array_shift($files);
 
         $out = [];
 
         foreach ($files as $file) {
+            if($file == "." || $file == ".."){
+                continue;
+            }
+
+            if(is_link($dir . $file)){
+                continue;
+            }
+
             if (is_dir($dir . $file)) {
                 $out = array_merge($out, $this->scanDir($dir . $file . "/"));
             } else {

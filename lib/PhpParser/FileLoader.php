@@ -28,9 +28,10 @@ class FileLoader
         return $filename;
     }
 
-    public function __construct($filename, $cacheDir = __DIR__ . "/../../cache/") {
+    public function __construct($filename, $cacheDir =  "~/.phpstruct/") {
         $this->fileName = $this->getFulPath($filename);
-        $this->cacheDir = realpath($this->getFulPath($cacheDir)) . "/files/";
+
+        $this->cacheDir = $this->getFulPath($cacheDir) . "/files/";
         $this->mkdir($this->cacheDir);
     }
 
@@ -63,6 +64,7 @@ class FileLoader
             && file_exists($this->getCachePath())
             && filemtime($this->getCachePath()) > filemtime($this->fileName)
         ) {
+
             return require $this->getCachePath();
         }
         $out = $this->getProcessor()->process();

@@ -20,38 +20,8 @@ class File extends Base
      */
     private $path;
 
-    /**
-     * @var string
-     */
-    private $namespace;
-
-    /**
-     * @var UseBlock
-     */
-    private $use;
-
-    /**
-     * @return UseLine[]
-     */
-    public function getUses() {
-        return $this->use->getUses();
-    }
-
-    /**
-     * @var Procedure[]
-     */
-    private $functions = [];
-
-    /**
-     * @var AbstractDataType[]
-     */
-    private $classes = [];
-
-    /**
-     * @var Scope
-     */
-    private $code;
-
+    /** @var NamespaceDef[] */
+    private $namespaces = [];
 
     public static function getConstructorFields(){
         return ["path"];
@@ -59,64 +29,22 @@ class File extends Base
 
     public function __construct($name) {
         $this->path = $name;
-        $this->code = new Scope();
-        $this->use = new UseBlock();
     }
 
-    public function setNameSpaceItem(DefineUsage $name) {
-        $this->namespace = $name->getName();
-    }
-    public function setNamespace($namespace){
-        $this->namespace = $namespace;
+    public function addNamespace(NamespaceDef $ns){
+        $this->namespaces[] = $ns;
     }
 
-    public function addFunction(Procedure $function) {
-        $this->functions[] = $function;
+    /**
+     * @return NamespaceDef[]
+     */
+    public function getNamespaces() {
+        return $this->namespaces;
     }
-
-    public function addClass(AbstractDataType $class) {
-        $this->classes[] = $class;
-    }
-
-    public function addUse(UseBlock $use) {
-        $this->use->merge($use);
-    }
-
-    public function setUse(UseBlock $use){
-        $this->addUse($use);
-    }
-
-    public function mergeScope(Scope $scope){
-        $this->code->mergeScope($scope);
-    }
-    public  function addExpression(Base $expr){
-        $this->code->addExpression($expr);
-    }
-
-    public function getFunctions(){
-        return $this->functions;
-    }
-
-    public function getClasses(){
-        return $this->classes;
-    }
-
-    public function getNamespace(){
-        return $this->namespace;
-    }
-
-    public function getCode(){
-        return $this->code;
-    }
-
-    public function setCode(Scope $scope){
-        $this->code = $scope;
-    }
-
     /**
      * @return Base[]
      */
     public function getChildren() {
-        return array_merge($this->classes, $this->functions, [$this->code]);
+        return $this->namespaces;
     }
 }

@@ -45,7 +45,7 @@ class AbstractDataType extends BaseDump
             $out .= "\n";
         }
 
-        $out .= "}";
+        $out .= $this->getLevelShift($level) . "}";
 
         return $out;
     }

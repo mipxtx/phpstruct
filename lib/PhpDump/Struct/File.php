@@ -17,23 +17,28 @@ class File extends BaseDump
      */
     public function process($in, $level) {
         $out = "<?php\n\n";
+        $names = [];
+        $empty = false;
+        foreach($in->getNamespases() as $ns){
+            $name = $ns->getName();
+            if(!$name){
+                $empty = $ns;
+            }else {
+                $names[] = $ns;
+            }
 
-        if($in->getNamespace()){
-            $out .= "namespace " . $in->getNamespace() . ";\n\n";
+        }
+        $enclosed = false;
+        if($empty &&  $names){
+            $enclosed = true;
         }
 
-        foreach($in->getUses() as $use){
-            $out .= $this->processExpression($use, 0) . ";\n";
+        if($empty){
+            $out .= $this->processExpression($empty,$level,["enclosed" => $enclosed]) . "\n";
         }
 
-        $out .= $this->processExpression($in->getCode(), -1);
-
-        foreach ($in->getFunctions() as $func) {
-            $out .= $this->processExpression($func, 0) . "\n";
-        }
-
-        foreach ($in->getClasses() as $class) {
-            $out .= $this->processExpression($class, 0) . "\n";
+        foreach($names as $name){
+            $out .= $this->processExpression($name,$level,["enclosed" => $enclosed]) . "\n";
         }
 
         return $out;

@@ -1,11 +1,7 @@
 <?php
 namespace PhpParser;
+use PhpStruct\Struct\NamespaceDef;
 
-use PhpDump\Expression\Unary;
-use PhpStruct\Expression\UseBlock;
-use PhpStruct\Expression\UseLine;
-use PhpStruct\Struct\AbstractDataType;
-use PhpStruct\Struct\Procedure;
 
 /**
  * @author: mix
@@ -38,27 +34,27 @@ class File
         if ($this->isEnabled()) {
             $expressionProcessor->enableDebug();
         }
+        $namespace = new NamespaceDef("");
         while (!$this->end()) {
             $this->log("start expr");
-            $scope = $expressionProcessor->process();
+            $scope = $expressionProcessor->process()->getScope();
 
-            foreach ($scope->getScope() as $line) {
-                if ($line instanceof AbstractDataType) {
-                    $file->addClass($line);
-                } elseif ($line instanceof Procedure) {
-                    $file->addFunction($line);
-                } elseif ($line instanceof UseBlock) {
-                    $file->addUse($line);
-                } elseif (
-                    $line instanceof \PhpStruct\Expression\Unary
-                    && strtolower($line->getOperator()) == "namespace"
-                ) {
-                    $file->setNameSpaceItem($line->getOperand());
-                } else {
-                    $file->addExpression($line);
+            foreach ($scope as $line) {
+                if($line instanceof NamespaceDef){
+                    if(!$namespace->isEmpty()){
+                        $file->addNamespace($namespace);
+                    }
+                    $namespace = $line;
+                }else{
+                    $namespace->addLine($line);
                 }
             }
         }
+
+        if(!$namespace->isEmpty()){
+            $file->addNamespace($namespace);
+        }
+
 
         return $file;
     }

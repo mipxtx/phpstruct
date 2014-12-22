@@ -27,6 +27,10 @@ class Dereference extends Base{
         return $this->body;
     }
 
+    public static function getConstructorFields(){
+        return ["body"];
+    }
+
     /**
      * @return Base[]
      */

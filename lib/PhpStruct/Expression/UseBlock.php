@@ -10,6 +10,7 @@ namespace PhpStruct\Expression;
 use PhpStruct\Base;
 
 class UseBlock extends Base implements HasScopes{
+
     private $uses = [];
 
     private $mappings = [];
