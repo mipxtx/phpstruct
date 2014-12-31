@@ -27,7 +27,7 @@ class File
     public function process() {
         $file = new \PhpStruct\Struct\File($this->path);
         $namespace = new NamespaceDef("");
-        while(!$this->current()->isTypeOf(T_OPEN_TAG)){
+        while(!$this->current()->isTypeOf(T_OPEN_TAG) && !$this->end()){
             if(strpos($this->current()->getValue(), "#!") === 0){
                 $namespace->addLine(new Shebang());
             }else{
@@ -36,7 +36,9 @@ class File
             $this->logNext("start inline");
         }
 
-        $this->next();
+        if($this->current()->isTypeOf(T_OPEN_TAG)) {
+            $this->next();
+        }
 
         $expressionProcessor = new Expression($this->getIterator());
         if ($this->isEnabled()) {

@@ -24,10 +24,17 @@ class Scope extends BaseDump
         }
         $lines = [];
         foreach ($in->getScope() as $line) {
-            $codeLine = $this->getLevelShift($level+1)
+            $label = $line->getLabel();
+            $codeLine = "";
+            if ($label) {
+                $codeLine .= $this->getLevelShift($level + 1) . $label . ":\n";
+            }
+
+            $codeLine .= $this->getLevelShift($level + 1)
                 . $this->processHead($line, $level + 1)
                 . $this->processModifiers($line)
                 . $this->processExpression($line, $level + 1);
+
             if (!($line instanceof HasScopes)) {
                 $codeLine .= ";";
             }
@@ -36,7 +43,7 @@ class Scope extends BaseDump
         $out .= implode("\n", $lines);
 
         if ($level >= 0 && !$noBrace) {
-            $out .= "\n".$this->getLevelShift($level) . "}";
+            $out .= "\n" . $this->getLevelShift($level) . "}";
         }
 
         return $out;

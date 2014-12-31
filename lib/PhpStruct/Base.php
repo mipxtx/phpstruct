@@ -40,6 +40,8 @@ abstract class Base
 
     private $initTokenId = null;
 
+    private $label;
+
     public function hasScope() {
         return false;
     }
@@ -127,6 +129,14 @@ abstract class Base
 
     public static function getConstructorFields(){
         return [];
+    }
+
+    public function setLabel($label){
+        $this->label = $label;
+    }
+
+    public function getLabel(){
+        return $this->label;
     }
 
     /**

@@ -251,6 +251,7 @@ class Token
                 "clone",
                 "$",
                 "yield",
+                "goto",
             ]
         );
     }

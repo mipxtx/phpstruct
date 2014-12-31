@@ -6,7 +6,7 @@ require __DIR__ . "/init-dev.php";
 //$path = __DIR__ . "/sample/class.php";
 $path  = __DIR__ . "/sample/micro.php";
 //$path  = __DIR__ . "/sample/if.php";
-//$path = "/Users/mix/wsp/mamba/.composer/vendor/fzaninotto/faker/test/documentor.php";
+$path = "/Users/mix/wsp/mamba/exchange/billing/beeline_test.phtml";
 //$path = __DIR__ . "/sample/short.php";
 $f = new \PhpParser\FileLoader($path);
 $f->enableDebug();

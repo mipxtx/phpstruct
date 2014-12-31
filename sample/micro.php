@@ -174,4 +174,30 @@ else
     $l = 4294967296.0 - $l;
 }*/
 
-$formulaStrings[] = "$space1$space0$function(" . implode(',', $ops) . ")";
+//$formulaStrings[] = "$space1$space0$function(" . implode(',', $ops) . ")";
+
+
+if (0 === strpos($pathinfo, '/bar')) {
+    // bar
+    if (preg_match('#^/bar/(?P<foo>[^/]++)$#s', $pathinfo, $matches)) {
+        if (!in_array($this->context->getMethod(), array('GET', 'HEAD'))) {
+            $allow = array_merge($allow, array('GET', 'HEAD'));
+            goto not_bar;
+        }
+
+        return $this->mergeDefaults(array_replace($matches, array('_route' => 'bar')), array ());
+    }
+    not_bar:
+
+    // barhead
+    if (0 === strpos($pathinfo, '/barhead') && preg_match('#^/barhead/(?P<foo>[^/]++)$#s', $pathinfo, $matches)) {
+        if (!in_array($this->context->getMethod(), array('GET', 'HEAD'))) {
+            $allow = array_merge($allow, array('GET', 'HEAD'));
+            goto not_barhead;
+        }
+
+        return $this->mergeDefaults(array_replace($matches, array('_route' => 'barhead')), array ());
+    }
+    not_barhead:
+
+}

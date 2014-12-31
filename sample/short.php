@@ -34,5 +34,5 @@ declare(ticks = 1):
 enddeclare;
 
 
-?>sdfsdffsdsf<?=$a?>
+?>test<?=$a?>
 

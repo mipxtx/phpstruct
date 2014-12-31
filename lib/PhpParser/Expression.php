@@ -86,7 +86,7 @@ class Expression
         ["xor"],
         ["or"],
         [","],
-        ["yield"],
+        ["yield", "goto"],
         ["exit", "die", "echo", "print", "return", "namespace", "throw", "as", "global"],
     ];
 
@@ -101,7 +101,6 @@ class Expression
 
             return $out;
         }
-
         return $name;
     }
 
@@ -711,6 +710,15 @@ class Expression
             }
 
             $continue = false;
+            $label = "";
+
+            if(
+                $this->current()->isTypeOf(T_STRING)
+                && $this->current()->next()->equal(":")
+            ){
+                $label = $this->current()->getValue();
+                $this->logNext("2label", 2);
+            }
 
             $start = $token = $this->current();
             switch ($this->current()->getType()) {
@@ -767,6 +775,12 @@ class Expression
                     }
                     $this->log("end");
                     break;
+                case T_OPEN_TAG_WITH_ECHO :
+                    $this->logNext("open echo");
+                    $expr = new Unary("echo");
+                    $expr->setOperand($this->processExpression());
+
+                    break;
                 case T_CLOSE_TAG :
                     $this->logNext("inline");
                     if (!$this->current()->isTypeOf([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
@@ -785,6 +799,8 @@ class Expression
             if ($continue) {
                 continue;
             }
+
+            $expr->setLabel($label);
 
             $this->processModifiers($expr, $start);
 
