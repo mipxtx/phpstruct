@@ -6,6 +6,17 @@
 
 namespace PhpParser;
 
+use PhpStruct\Base;
+use PhpStruct\Expression\InlineStr;
+use PhpStruct\HasNameInterface;
+use PhpStruct\FailException;
+
+use PhpStruct\Struct\AbstractDataType;
+use PhpStruct\Struct\ClassField;
+use PhpStruct\Struct\NamespaceDef;
+use PhpStruct\Struct\ProcArgument;
+use PhpStruct\Struct\Procedure;
+
 use PhpStruct\Expression\CaseDef;
 use PhpStruct\Expression\CatchDef;
 use PhpStruct\Expression\DeclareDef;
@@ -16,11 +27,9 @@ use PhpStruct\Expression\SwitchExpr;
 use PhpStruct\Expression\TryDef;
 use PhpStruct\Expression\UseBlock;
 use PhpStruct\Expression\UseMapping;
-use PhpStruct\FailException;
 use PhpStruct\Expression\ArrayAccess;
 use PhpStruct\Expression\ArrayAppend;
 use PhpStruct\Expression\ArrayDef;
-use PhpStruct\Base;
 use PhpStruct\Expression\Binary;
 use PhpStruct\Expression\CycleBreak;
 use PhpStruct\Expression\DefineUsage;
@@ -41,18 +50,10 @@ use PhpStruct\Expression\Unary;
 use PhpStruct\Expression\UnarySuffix;
 use PhpStruct\Expression\UseLine;
 use PhpStruct\Expression\Variable;
-use PhpStruct\HasNameInterface;
-use PhpStruct\Struct\AbstractDataType;
-use PhpStruct\Struct\ClassField;
-use PhpStruct\Struct\NamespaceDef;
-use PhpStruct\Struct\ProcArgument;
-use PhpStruct\Struct\Procedure;
 
 class Expression
 {
-    use SupportTrait {
-        SupportTrait::log as cLog;
-    }
+    use SupportTrait;
 
     /**
      * @see http://php.net/manual/ru/language.operators.precedence.php
@@ -85,37 +86,9 @@ class Expression
         ["xor"],
         ["or"],
         [","],
+        ["yield"],
         ["exit", "die", "echo", "print", "return", "namespace", "throw", "as", "global"],
     ];
-
-    private $level = 0;
-
-    public function getLogMsg($msg) {
-        foreach (["next" => "0;31", "start" => "0;32", "token" => "1;33", "arg " => "0;34"] as $key => $color) {
-            $msg = str_replace($key, "\033[{$color}m{$key}\033[0m", $msg);
-        }
-        $msg = str_replace("\t", "    ", $msg);
-        $shift = "";
-        for ($i = 0; $i < $this->level; $i++) {
-            $shift .= " ";
-        }
-        if (strpos($msg, "\n")) {
-            $lines = explode("\n", $msg);
-            $out = [];
-            foreach ($lines as $i => $line) {
-                $out[] = $shift . $line;
-            }
-            $msg = implode("\n", $out);
-        } else {
-            $msg = $shift . $msg;
-        }
-
-        return $msg;
-    }
-
-    public function log($msg, $skipTokens = false) {
-        $this->cLog($this->getLogMsg($msg), $skipTokens);
-    }
 
     public function __construct(TokenIterator $iterator) {
         $this->setIterator($iterator);
@@ -159,11 +132,14 @@ class Expression
 
         $out = new QuotedString();
         while ($this->current()->getType() !== $stopOnType) {
-            if (
-                $this->current()->getType() !== T_ENCAPSED_AND_WHITESPACE
-                && $this->current()->getType() !== T_CURLY_OPEN
-            ) {
-                $expr = $this->processToken();
+            if ($this->current()->isTypeOf(T_CURLY_OPEN)) {
+                $this->logNext("quoted expr");
+                $expr = $this->processExpression();
+
+                $this->logNext("quoted expr out");
+            } elseif ($this->current()->isTypeOf(T_VARIABLE)) {
+                $expr = new Variable(ltrim($this->current()->getValue(), '$'));
+                $this->logNext("quoted var");
                 if ($this->current()->equal("->")) {
                     $this->logNext("quoted ->");
                     $expr = new Binary("->", $expr);
@@ -176,17 +152,11 @@ class Expression
                     $expr = new ArrayAccess($expr, $op2);
                     $this->logNext("2]quoted", 2);
                 }
-
-                $out->addElement($expr);
-            } elseif ($this->current()->getType() === T_CURLY_OPEN) {
-                $this->logNext("quoted expr");
-                $expr = $this->processExpression();
-                $out->addElement($expr);
-                $this->logNext("quoted expr out");
             } else {
-                $expr = $this->processToken();
-                $out->addElement($expr);
+                $expr = new DefineUsage($this->current()->getValue());
+                $this->logNext("quoted str");
             }
+            $out->addElement($expr);
         }
         $this->logNext("quoted out");
 
@@ -213,6 +183,7 @@ class Expression
             case T_UNSET:
             case T_METHOD_C:
             case T_CLASS_C:
+            case T_NS_C:
             case T_FUNC_C:
             case T_LIST:
             case T_CLASS:
@@ -278,7 +249,6 @@ class Expression
                 $body = $this->processExpression();
                 $out = new Dereference($body);
                 $this->logNext('${ out');
-                $this->log("ddd");
                 break;
             default:
                 throw new FailException("unknown token " . $this->getLogInfo());
@@ -309,11 +279,16 @@ class Expression
     /**
      * @return Scope
      */
-    public function processBracesScope() {
-
+    public function processBracesScope($stopOn = false) {
         $this->level++;
-        if ($this->current()->getValue() == "{") {
-
+        if ($this->current()->getValue() == ":") {
+            if (!$stopOn) {
+                throw new FailException("you have to setup stopOn");
+            }
+            $this->logNext("alter struct start");
+            $scope = $this->process(false, $stopOn);
+            $this->logNext("2alter struct end", 2);
+        } elseif ($this->current()->getValue() == "{") {
             $this->logNext("brscope start");
             $scope = $this->process(false);
             $this->logNext("brscope end");
@@ -328,15 +303,15 @@ class Expression
 
     public function processStop() {
         return $this->current()->getValue() == "}"
-        || $this->current()->getType() == T_CASE
-        || $this->current()->getType() == T_DEFAULT;
+        || $this->current()->isTypeOf(T_CASE)
+        || $this->current()->isTypeOf(T_DEFAULT);
     }
 
     public function processIf() {
         $this->logNext("2if", 2);
         $ifCond = $this->processExpression();
         $this->logNext("if expr");
-        $body = $this->processBracesScope();
+        $body = $this->processBracesScope(T_ENDIF);
         $if = new IfSmall($ifCond, $body);
         $expr = new IfExpr($if);
         while (
@@ -368,7 +343,7 @@ class Expression
         $this->logNext("foreach as");
         $iterator = $this->processExpression();
         $this->logNext("foreach body");
-        $ifCond = $this->processBracesScope();
+        $ifCond = $this->processBracesScope(T_ENDFOREACH);
 
         return new ForEachDef($item, $iterator, $ifCond);
     }
@@ -381,7 +356,7 @@ class Expression
         $this->logNext("for count");
         $count = $this->processExpression();
         $this->logNext("for out");
-        $ifCond = $this->processBracesScope();
+        $ifCond = $this->processBracesScope(T_ENDFOR);
 
         return new ForDef($def, $cond, $count, $ifCond);
     }
@@ -503,7 +478,7 @@ class Expression
             }
         } elseif ($this->current()->getValue() == ")") {
         } else {
-            throw new FailException("func params parsing " . $this->current());
+            throw new FailException("func params parsing " . $this->getLogInfo());
         }
 
         return $param;
@@ -591,27 +566,34 @@ class Expression
         $expr = new SwitchExpr($switchCond);
         $this->logNext("switch body");
 
-        while (!$this->current()->equal("}")) {
+        while (
+            !$this->current()->equal("}")
+            && !$this->current()->isTypeOf(T_ENDSWITCH)
+        ) {
             switch ($this->current()->getType()) {
                 case T_CASE :
                     $this->logNext("case");
                     $cond = $this->processExpression([Token::T_COLON]);
                     $this->logNext("case body");
-                    $body = $this->process();
+                    $body = $this->process(false, T_ENDSWITCH);
                     $case = new CaseDef($body, $cond);
                     $expr->addCase($case);
                     break;
                 case T_DEFAULT :
                     $this->logNext("default2", 2);
-                    $body = $this->process();
+                    $body = $this->process(false, T_ENDSWITCH);
                     $def = new DefaultCase($body);
                     $expr->setDefault($def);
                     break;
                 default:
-                    throw new FailException("unknown token");
+                    throw new FailException("unknown token" . $this->getLogInfo());
             }
         }
-        $this->logNext("switch out");
+        if ($this->current()->isTypeOf(T_ENDSWITCH)) {
+            $this->logNext("2switch out", 2);
+        } else {
+            $this->logNext("switch out");
+        }
 
         return $expr;
     }
@@ -659,10 +641,12 @@ class Expression
 
         $cond = $this->parseLoopCondition();
         $ret = new DeclareDef($cond);
-        $this->log("dec");
 
         if ($this->current()->equal("{")) {
             $body = $this->processBracesScope();
+            $ret->setBody($body);
+        } elseif ($this->current()->equal(":")) {
+            $body = $this->processBracesScope(T_ENDDECLARE);
             $ret->setBody($body);
         }
 
@@ -673,7 +657,7 @@ class Expression
         $type = strtolower($this->current()->getValue());
         $this->logNext("while");
         $cond = $this->parseLoopCondition();
-        $body = $this->processBracesScope();
+        $body = $this->processBracesScope(T_ENDWHILE);
         $out = new ConditionLoop($body, $cond, $type);
         $out->setConditionFirst();
 
@@ -685,7 +669,7 @@ class Expression
      * @throws FailException
      * @return Scope
      */
-    public function process($single = false) {
+    public function process($single = false, $stopOn = null) {
         $scope = new Scope();
         while (!$this->end() && !$this->processStop()) {
 
@@ -699,6 +683,16 @@ class Expression
             if ($this->current()->getValue() == "}") {
                 break;
             }
+
+            if ($stopOn && $this->current()->isTypeOf($stopOn)) {
+                break;
+            }
+
+            if ($this->current()->isTypeOf(T_OPEN_TAG)) {
+                $this->logNext("opentag");
+                continue;
+            }
+
             $this->log("process start");
             $expr = null;
 
@@ -715,6 +709,8 @@ class Expression
                 $this->logNext("modifier");
                 continue;
             }
+
+            $continue = false;
 
             $start = $token = $this->current();
             switch ($this->current()->getType()) {
@@ -771,8 +767,23 @@ class Expression
                     }
                     $this->log("end");
                     break;
+                case T_CLOSE_TAG :
+                    $this->logNext("inline");
+                    if (!$this->current()->isTypeOf([T_OPEN_TAG, T_OPEN_TAG_WITH_ECHO])) {
+                        $expr = new InlineStr($this->current()->getValue());
+                    } else {
+
+                        $continue = true;
+                    }
+                    $this->logNext("inline out");
+                    break;
+
                 default:
                     $expr = $this->processExpression();
+            }
+
+            if ($continue) {
+                continue;
             }
 
             $this->processModifiers($expr, $start);
@@ -789,6 +800,7 @@ class Expression
             $scope->addExpression($expr);
             $this->log("process end");
         }
+
         return $scope;
     }
 
@@ -962,18 +974,8 @@ class Expression
             || $this->current()->isTypeOf(Token::T_BRACKETS_CLOSE)
             || $this->current()->isTypeOf(T_AS)
             || $this->current()->isTypeOf(Token::T_COLON)
+            || $this->current()->isTypeOf(T_CLOSE_TAG)
             || $this->end();
-    }
-
-    /**
-     * @param $msg
-     * @param int $count
-     * @return Token
-     */
-    public function logNext($msg, $count = 1) {
-        $this->log("next $msg");
-
-        return $this->next($count);
     }
 
     /**

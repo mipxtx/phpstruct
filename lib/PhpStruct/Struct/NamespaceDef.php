@@ -123,6 +123,10 @@ class NamespaceDef extends Base implements HasScopes{
         }
     }
 
+    public static function getConstructorFields(){
+        return ["name"];
+    }
+
     /**
      * @return Base[]
      */

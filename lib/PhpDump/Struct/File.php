@@ -19,7 +19,7 @@ class File extends BaseDump
         $out = "<?php\n\n";
         $names = [];
         $empty = false;
-        foreach($in->getNamespases() as $ns){
+        foreach($in->getNamespaces() as $ns){
             $name = $ns->getName();
             if(!$name){
                 $empty = $ns;

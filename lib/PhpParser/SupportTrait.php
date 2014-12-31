@@ -9,6 +9,8 @@ namespace PhpParser;
 trait SupportTrait
 {
 
+    private $level = 0;
+
     /**
      * @var TokenIterator;
      */
@@ -59,7 +61,7 @@ trait SupportTrait
 
     }
 
-    public function log($message, $skipTokens = false) {
+    public function clog($message, $skipTokens = false) {
         if (!$this->debug) {
             return;
         }
@@ -70,6 +72,44 @@ trait SupportTrait
             echo $this->getLogInfo();
         }
         echo "\n";
+    }
+
+    public function getLogMsg($msg) {
+        foreach (["next" => "0;31", "start" => "0;32", "token" => "1;33", "arg " => "0;34"] as $key => $color) {
+            $msg = str_replace($key, "\033[{$color}m{$key}\033[0m", $msg);
+        }
+        $msg = str_replace("\t", "    ", $msg);
+        $shift = "";
+        for ($i = 0; $i < $this->level; $i++) {
+            $shift .= " ";
+        }
+        if (strpos($msg, "\n")) {
+            $lines = explode("\n", $msg);
+            $out = [];
+            foreach ($lines as $i => $line) {
+                $out[] = $shift . $line;
+            }
+            $msg = implode("\n", $out);
+        } else {
+            $msg = $shift . $msg;
+        }
+
+        return $msg;
+    }
+
+    public function log($msg, $skipTokens = false) {
+        $this->cLog($this->getLogMsg($msg), $skipTokens);
+    }
+
+    /**
+     * @param $msg
+     * @param int $count
+     * @return Token
+     */
+    public function logNext($msg, $count = 1) {
+        $this->log("next $msg");
+
+        return $this->next($count);
     }
 
     public function enableDebug() {

@@ -6,7 +6,10 @@
 
 namespace PhpStruct;
 
+use PhpParser\SupportTrait;
+use PhpParser\Token;
 
-class FailException extends \Exception{
-
-} 
+class FailException extends \Exception
+{
+    use SupportTrait;
+}

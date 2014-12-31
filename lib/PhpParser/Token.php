@@ -249,7 +249,8 @@ class Token
                 "global",
                 "throw",
                 "clone",
-                "$"
+                "$",
+                "yield",
             ]
         );
     }

@@ -1,5 +1,7 @@
 <?php
 namespace PhpParser;
+use PhpStruct\Expression\InlineStr;
+use PhpStruct\Expression\Shebang;
 use PhpStruct\Struct\NamespaceDef;
 
 
@@ -24,17 +26,23 @@ class File
      */
     public function process() {
         $file = new \PhpStruct\Struct\File($this->path);
-
-        $open = $this->current();
-        if (!$open->isTypeOf(T_OPEN_TAG)) {
-            throw new FailException("start tag must be a first token, {$open} given in {$this->path}");
+        $namespace = new NamespaceDef("");
+        while(!$this->current()->isTypeOf(T_OPEN_TAG)){
+            if(strpos($this->current()->getValue(), "#!") === 0){
+                $namespace->addLine(new Shebang());
+            }else{
+                $namespace->addLine(new InlineStr($this->current()->getValue()));
+            }
+            $this->logNext("start inline");
         }
+
         $this->next();
+
         $expressionProcessor = new Expression($this->getIterator());
         if ($this->isEnabled()) {
             $expressionProcessor->enableDebug();
         }
-        $namespace = new NamespaceDef("");
+
         while (!$this->end()) {
             $this->log("start expr");
             $scope = $expressionProcessor->process()->getScope();

@@ -7,10 +7,6 @@
 namespace PhpStruct\Struct;
 
 use PhpStruct\Base;
-use PhpStruct\Expression\DefineUsage;
-use PhpStruct\Expression\Scope;
-use PhpStruct\Expression\UseBlock;
-use PhpStruct\Expression\UseLine;
 
 class File extends Base
 {
