@@ -176,7 +176,7 @@ else
 
 //$formulaStrings[] = "$space1$space0$function(" . implode(',', $ops) . ")";
 
-
+/*
 if (0 === strpos($pathinfo, '/bar')) {
     // bar
     if (preg_match('#^/bar/(?P<foo>[^/]++)$#s', $pathinfo, $matches)) {
@@ -201,3 +201,12 @@ if (0 === strpos($pathinfo, '/bar')) {
     not_barhead:
 
 }
+*/
+
+//
+
+$a = 6*5*4+3+2+1 == 7+2+5+6;
+
+//1+2+3;
+
+//3 * +2;

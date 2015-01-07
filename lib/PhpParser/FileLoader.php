@@ -20,25 +20,13 @@ class FileLoader
 
     private $disableCache = false;
 
-    public function getFulPath($filename) {
-        if ($filename[0] == "~") {
-            $filename = $_ENV["HOME"] . ltrim($filename, "~");
-        }
 
-        return $filename;
-    }
 
-    public function __construct($filename, $cacheDir =  "~/.phpstruct/") {
-        $this->fileName = $this->getFulPath($filename);
+    public function __construct($filename, $cacheDir =  Helper::DEFAULT_CACHEDIR) {
+        $this->fileName = Helper::getFulPath($filename);
 
-        $this->cacheDir = $this->getFulPath($cacheDir) . "/files/";
-        $this->mkdir($this->cacheDir);
-    }
-
-    public function mkdir($dir) {
-        if (!file_exists($dir)) {
-            mkdir($dir, 0777, true);
-        }
+        $this->cacheDir = Helper::getFulPath($cacheDir) . "/files/";
+        Helper::mkdir($this->cacheDir);
     }
 
     public function getProcessor() {

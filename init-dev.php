@@ -1,5 +1,5 @@
 <?php
-
+//ini_set("memory_limit", "2G");
 spl_autoload_register(
     function ($class) {
         $filename = __DIR__ . "/lib/" . str_replace("\\","/",$class) . ".php";

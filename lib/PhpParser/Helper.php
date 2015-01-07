@@ -8,6 +8,8 @@ namespace PhpParser;
 
 class Helper
 {
+    const DEFAULT_CACHEDIR = "~/.phpstruct";
+
     const STRING_LEN = 12;
 
     public static function buildTrace($trace) {
@@ -117,5 +119,21 @@ class Helper
         if (in_array($errno, [E_RECOVERABLE_ERROR])) {
             exit();
         }
+    }
+
+
+
+    public static function mkdir($dir){
+        if(!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+    }
+
+    public static function getFulPath($filename) {
+        if ($filename[0] == "~") {
+            $filename = $_ENV["HOME"] . ltrim($filename, "~");
+        }
+
+        return $filename;
     }
 } 

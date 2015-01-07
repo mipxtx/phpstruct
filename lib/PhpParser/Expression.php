@@ -8,6 +8,7 @@ namespace PhpParser;
 
 use PhpStruct\Base;
 use PhpStruct\Expression\InlineStr;
+use PhpStruct\Expression\MultiBinary;
 use PhpStruct\HasNameInterface;
 use PhpStruct\FailException;
 
@@ -101,6 +102,7 @@ class Expression
 
             return $out;
         }
+
         return $name;
     }
 
@@ -432,6 +434,13 @@ class Expression
                 $field = $this->extractField($current);
                 $field->setModifiers($modifiers);
                 $expr->addField($field);
+            }elseif($line instanceof MultiBinary){
+                $modifiers = $line->getModifiers();
+                foreach($line->getOperands() as $op){
+                    $field = $this->extractField($op);
+                    $field->setModifiers($modifiers);
+                    $expr->addField($field);
+                }
             } else {
                 print_r($line);
                 throw new FailException("unknown field class " . get_class($line));
@@ -712,10 +721,10 @@ class Expression
             $continue = false;
             $label = "";
 
-            if(
+            if (
                 $this->current()->isTypeOf(T_STRING)
                 && $this->current()->next()->equal(":")
-            ){
+            ) {
                 $label = $this->current()->getValue();
                 $this->logNext("2label", 2);
             }
@@ -880,10 +889,13 @@ class Expression
                 $isUnary = $token->canUnary()
                     && (
                         !$top
-                        || !$current instanceof MultiOperand
-                        || ($current instanceof MultiOperand && $current->getOperand() === null)
+                        || $current && (
+                            !$current instanceof MultiOperand
+                            || ($current instanceof MultiOperand && $current->getOperand() === null)
+                        )
                     );
 
+                //die();
                 if ($isUnary) {
                     list($current, $top) = $this->processUnary($token, $top);
                 } else {
@@ -966,10 +978,50 @@ class Expression
                 }
             }
         }
+
+        if ($top instanceof Binary) {
+            $top = $this->convertMultiBinary($top);
+        }
+
         $this->log("end expr");
         $this->level--;
 
         return $top ?: new EmptyStatement();
+    }
+
+    public function getMultiBinaryList(Binary $in, $operator){
+        $first = $in->getFirstOperand();
+        if($first instanceof Binary && $first->getOperator() == $operator){
+            $out = $this->getMultiBinaryList($first, $operator);
+        }else{
+            $out = [$first];
+        }
+        $out[] = $in->getOperand();
+        return $out;
+    }
+
+    public function convertMultiBinary(Binary $in) {
+        $first = $in->getFirstOperand();
+        if($first instanceof Binary) {
+            if ($in->getOperator() == $first->getOperator()) {
+                $multi = new MultiBinary($first->getOperator());
+                foreach ($this->getMultiBinaryList($in, $first->getOperator()) as $item) {
+                    $multi->addOperand($item);
+                }
+
+                return $multi;
+            }
+            $in->setFirstOperand($this->convertMultiBinary($first));
+        }
+
+        $second = $in->getOperand();
+
+        if($second instanceof Binary){
+            $in->setOperand($this->convertMultiBinary($second));
+        }
+
+
+        return $in;
     }
 
     public function processArrayAccess(Base $operand) {

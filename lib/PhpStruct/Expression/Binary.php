@@ -52,6 +52,11 @@ class Binary extends Operator implements MultiOperand
         return $this->operand1;
     }
 
+    public function setFirstOperand(Base $operand){
+        $this->operand1 = $operand;
+    }
+
+
     /**
      * @return Base[]
      */
