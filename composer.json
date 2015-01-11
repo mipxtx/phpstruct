@@ -1,12 +1,11 @@
 {
     "name" : "phpstruct",
-    "require-dev": {
-        "phpunit/phpunit": "*"
-    },
     "autoload": {
         "psr0":
             {
-                "PhpStruct": "lib/"
+                "PhpStruct": "lib/",
+                "PhpParser": "lib/",
+                "PhpDump": "lib/"
             }
 
     }
